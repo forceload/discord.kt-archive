@@ -6,4 +6,6 @@ import io.github.teamcrez.discordkt.discord.internal.DiscordBot
 object WrapperStorage {
     val gson = Gson()
     lateinit var discordBot: DiscordBot
+
+    val userChannel: MutableMap<String, DiscordChannel> = HashMap()
 }

@@ -8,7 +8,7 @@ import okio.ByteString
 
 class InternalGatewayListener: WebSocketListener() {
     override fun onOpen(webSocket: WebSocket, response: Response) {
-        println("Gateway Listening!")
+        if (GatewayStorage.gatewayDebug) { println("Gateway Listening!") }
     }
 
     override fun onMessage(webSocket: WebSocket, text: String) {

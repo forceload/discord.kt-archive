@@ -3,7 +3,6 @@ package io.github.teamcrez.discordkt.discord
 import io.github.teamcrez.discordkt.discord.internal.DiscordBot
 import io.github.teamcrez.discordkt.discord.internal.gateway.GatewayListener
 import io.github.teamcrez.discordkt.discord.internal.gateway.GatewayStorage
-import io.github.teamcrez.discordkt.discord.internal.gateway.event.GatewayEvent
 import io.github.teamcrez.discordkt.discord.wrapper.WrapperStorage
 import kotlinx.coroutines.*
 
@@ -20,12 +19,21 @@ open class DiscordClient {
         clientSession = this
 
         GlobalScope.launch(Dispatchers.Default) {
-            GatewayListener(clientSession!!).run()
+            val gatewayListener = GatewayListener(clientSession!!)
+            while (!gatewayListener.isDisabled) {
+                gatewayListener.run()
+                while (true) { if (!gatewayListener.isRunning) { break } }
+            }
         }
     }
 
     open fun activate(): Boolean = true
-    fun bot(init: DiscordBot.() -> Unit) {
+
+    var debug: Boolean = false
+    fun bot(debug: Boolean = false, init: DiscordBot.() -> Unit) {
+        this.debug = debug
+        GatewayStorage.gatewayDebug = debug
+
         discordBot = DiscordBot(this)
         WrapperStorage.discordBot = discordBot
 

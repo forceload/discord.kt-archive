@@ -1,8 +1,6 @@
 package io.github.teamcrez.discordkt.discord.internal.command
 
-import com.google.gson.Gson
 import com.google.gson.JsonParser
-import io.github.teamcrez.discordkt.client.http.RequestUtil
 import io.github.teamcrez.discordkt.discord.APIRequester
 import io.github.teamcrez.discordkt.discord.internal.Commands
 import io.github.teamcrez.discordkt.discord.internal.DiscordBot

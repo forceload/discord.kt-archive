@@ -1,8 +1,6 @@
 package io.github.teamcrez.discordkt.client.websocket
 
 import okhttp3.*
-import java.net.URL
-import java.net.URLConnection
 import java.util.concurrent.TimeUnit
 
 class WebSocketClient(url: String, listener: WebSocketListener) {
@@ -23,7 +21,7 @@ class WebSocketClient(url: String, listener: WebSocketListener) {
     }
 
     fun disable() {
-
+        webSocket.close(0, "Client Disabled")
     }
 
 }
