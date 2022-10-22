@@ -41,7 +41,9 @@ class DiscordBot(val client: DiscordClient) {
         ).asJsonArray.forEach {
             val apiCommand = it.asJsonObject["name"].asJsonPrimitive.asString
             if (!commandObject.commandNames.contains(apiCommand)) {
-                APIRequester.deleteRequest("applications/$id/commands/${it.asJsonObject["id"].asJsonPrimitive.asString}")
+                APIRequester.deleteRequest(
+                    "applications/$id/commands/${it.asJsonObject["id"].asJsonPrimitive.asString}"
+                )
             }
         }
     }
