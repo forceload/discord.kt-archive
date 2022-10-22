@@ -4,6 +4,7 @@ package io.github.teamcrez.discordkt.discord.api
 object DiscordFlags {
     object GatewayFlag {
         const val HEARTBEAT_TIMESTAMP_SCALE = 0.6
+        const val DEFAULT_TIMEOUT: Long = 5
     }
     object MessageFlag {
         const val CROSSPOSTED = (1 shl 0).toShort()

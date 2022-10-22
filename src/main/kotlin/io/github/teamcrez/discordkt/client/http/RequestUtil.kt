@@ -37,7 +37,8 @@ object RequestUtil {
         }
 
         if (method.uppercase() == "POST") {
-            val postParams = params?.entries?.joinToString(separator = ".", prefix = "?", postfix = "") ?: additionalParams
+            val postParams =
+                params?.entries?.joinToString(separator = ".", prefix = "?", postfix = "") ?: additionalParams
 
             conn.setRequestProperty("Content-Type", contentType)
             conn.setRequestProperty("Content-Length", postParams.length.toString())
@@ -55,7 +56,10 @@ object RequestUtil {
         return Json.encodeToJsonElement(Response(defaultRequestStatus, responseString)).jsonObject
     }
 
-    fun request(url: String, header: MutableMap<String, String>? = null, params: MutableMap<String, Any>? = null, method: String = "GET", contentType: String = "application/x-www-form-urlencoded", additionalParams: String = "") =
-        request(URL(url), header, params, method, contentType, additionalParams)
+    fun request(
+        url: String, header: MutableMap<String, String>? = null, params: MutableMap<String, Any>? = null,
+        method: String = "GET", contentType: String = "application/x-www-form-urlencoded",
+        additionalParams: String = ""
+    ) = request(URL(url), header, params, method, contentType, additionalParams)
 
 }
