@@ -1,7 +1,11 @@
+---
+
 complexity:
   LongParameterList:
     ignoreDefaultParameters: true
 
 style:
   UnusedPrivateMember:
-    excludes: ["**/kotlin/io/github/teamcrez/discordkt/discord/internal/command/CommandComponent.kt"]
+    excludes: [
+      "**/kotlin/io/github/teamcrez/discordkt/discord/internal/command/CommandComponent.kt"
+    ]
