@@ -6,7 +6,12 @@ import io.github.teamcrez.discordkt.discord.internal.Commands
 import io.github.teamcrez.discordkt.discord.internal.DiscordBot
 import io.github.teamcrez.discordkt.discord.internal.command.context.CommandData
 
-class CommandComponent(private val command: Commands, bot: DiscordBot, private val commandName: String, private val description: String, private val args: Map<String, CommandData>) {
+class CommandComponent(
+    private val command: Commands, bot: DiscordBot,
+    private val commandName: String,
+    private val description: String,
+    private val args: Map<String, CommandData>
+) {
     private var isFirst: Boolean
 
     init {

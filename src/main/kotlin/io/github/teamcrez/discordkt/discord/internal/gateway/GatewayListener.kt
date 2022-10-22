@@ -3,15 +3,10 @@ package io.github.teamcrez.discordkt.discord.internal.gateway
 import com.google.gson.Gson
 import io.github.teamcrez.discordkt.client.websocket.WebSocketClient
 import io.github.teamcrez.discordkt.discord.DiscordClient
-import io.github.teamcrez.discordkt.discord.api.DiscordFlags
-import io.github.teamcrez.discordkt.discord.internal.command.context.CommandData
-import io.github.teamcrez.discordkt.discord.internal.command.CommandStorage
-import io.github.teamcrez.discordkt.discord.internal.command.context.CommandContext
 import io.github.teamcrez.discordkt.discord.internal.gateway.event.GatewayEvent
+import io.github.teamcrez.discordkt.discord.internal.gateway.manager.CommandManager
+import io.github.teamcrez.discordkt.discord.internal.gateway.manager.HeartbeatManager
 import io.github.teamcrez.discordkt.discord.internal.gateway.socket.InternalGatewayListener
-import io.github.teamcrez.discordkt.discord.wrapper.DiscordChannel
-import io.github.teamcrez.discordkt.discord.wrapper.DiscordInteraction
-import io.github.teamcrez.discordkt.discord.wrapper.DiscordUser
 import kotlinx.coroutines.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -21,10 +16,20 @@ import kotlinx.serialization.json.*
 class GatewayListener(private val discordClient: DiscordClient) {
 
     private var gson = Gson()
-    private lateinit var client: WebSocketClient
+    lateinit var client: WebSocketClient
 
     var isRunning = true
     var isDisabled = false
+
+    val identifier = mapOf(
+        "token" to discordClient.discordBot.token,
+        "intents" to discordClient.discordBot.intentFlag,
+        "properties" to mapOf(
+            "\$os" to "DiscordBot",
+            "\$browser" to "discord.kt",
+            "\$device" to "discord.kt"
+        )
+    )
 
     @OptIn(DelicateCoroutinesApi::class)
     suspend fun run() {
@@ -33,18 +38,7 @@ class GatewayListener(private val discordClient: DiscordClient) {
         if (!isDisabled) { isRunning = true }
         GlobalScope.launch(Dispatchers.Default) {
             launch {
-                while (isRunning) {
-                    if (GatewayStorage.heartbeatInterval != -1) { break }
-                    delay(1)
-                }
-
-                while (isActive && isRunning) {
-                    client.webSocket.send(Json.encodeToString(
-                        GatewayEvent(1, null, GatewayStorage.sequenceNumber, null)
-                    ))
-
-                    delay((GatewayStorage.heartbeatInterval * DiscordFlags.GatewayFlag.HEARTBEAT_TIMESTAMP_SCALE).toLong())
-                }
+                HeartbeatManager.heartbeatLoop(this, this@GatewayListener)
             }
 
             launch {
@@ -94,21 +88,7 @@ class GatewayListener(private val discordClient: DiscordClient) {
         when (event.op) {
             0 -> {
                 if (event.t == "INTERACTION_CREATE") {
-                    val commandName = event.d?.get("data")!!.jsonObject["name"]!!.jsonPrimitive.content
-
-                    if (CommandStorage.commandProcesses.keys.contains(commandName)) {
-                        val commandComponent = CommandStorage.commandProcesses[commandName]!!
-                        commandComponent[commandComponent.keys.first()]?.let {it(
-                            CommandData(
-                                CommandContext(
-                                    DiscordUser(event.d["member"]!!.jsonObject["user"]!!.jsonObject["id"]!!.jsonPrimitive.content),
-                                    DiscordChannel(event.d["channel_id"]!!.jsonPrimitive.content),
-
-                                    DiscordInteraction(event.d["id"]!!.jsonPrimitive.content, event.d["token"]!!.jsonPrimitive.content)
-                                )
-                            )
-                        )}
-                    }
+                    CommandManager.processCommand(event)
                 }
             }
 
@@ -121,17 +101,7 @@ class GatewayListener(private val discordClient: DiscordClient) {
                     event.d?.get("heartbeat_interval")!!.jsonPrimitive.int
 
                 val identifierData = Json.encodeToString(
-                    GatewayEvent(2, Json.parseToJsonElement(gson.toJson(
-                        mapOf(
-                            "token" to discordClient.discordBot.token,
-                            "intents" to discordClient.discordBot.intentFlag,
-                            "properties" to mapOf(
-                                "\$os" to "DiscordBot",
-                                "\$browser" to "discord.kt",
-                                "\$device" to "discord.kt"
-                            )
-                        )
-                    )).jsonObject, null, null)
+                    GatewayEvent(2, Json.parseToJsonElement(gson.toJson(identifier)).jsonObject, null, null)
                 )
 
                 client.webSocket.send(identifierData)
