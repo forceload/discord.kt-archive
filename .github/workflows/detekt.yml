@@ -17,4 +17,4 @@ jobs:
       - name: Run Detekt
         uses: natiginfo/action-detekt-all@1.22.0-RC1
         with:
-          args: --config=.github/config/detekt.yml
+          args: --build-upon-default-config --config .github/config/detekt.yml
