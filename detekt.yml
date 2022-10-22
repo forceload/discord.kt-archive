@@ -7,5 +7,9 @@ complexity:
 style:
   UnusedPrivateMember:
     excludes: [
-      "**/kotlin/io/github/teamcrez/discordkt/discord/internal/command/CommandComponent.kt"
+      "**/main/kotlin/io/github/teamcrez/discordkt/discord/internal/command/CommandComponent.kt"
     ]
+
+excludes: [
+  "**/test/**"
+]

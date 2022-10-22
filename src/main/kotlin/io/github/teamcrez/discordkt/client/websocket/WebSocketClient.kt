@@ -25,7 +25,7 @@ class WebSocketClient(url: String, listener: WebSocketListener) {
     }
 
     fun disable() {
-        webSocket.close(0, "Client Disabled")
+        webSocket.close(1000, "Client Disabled")
     }
 
 }

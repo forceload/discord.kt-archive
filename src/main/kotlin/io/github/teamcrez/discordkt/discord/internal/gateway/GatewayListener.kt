@@ -29,16 +29,6 @@ class GatewayListener(private val discordClient: DiscordClient) {
     var isRunning = true
     var isDisabled = false
 
-    val identifier = mapOf(
-        "token" to discordClient.discordBot.token,
-        "intents" to discordClient.discordBot.intentFlag,
-        "properties" to mapOf(
-            "\$os" to "DiscordBot",
-            "\$browser" to "discord.kt",
-            "\$device" to "discord.kt"
-        )
-    )
-
     @OptIn(DelicateCoroutinesApi::class)
     suspend fun run() {
         client = WebSocketClient("wss://gateway.discord.gg/?v=10&encoding=json", InternalGatewayListener())
@@ -66,7 +56,12 @@ class GatewayListener(private val discordClient: DiscordClient) {
                 while (isActive && isRunning) {
                     if (GatewayStorage.messages.isNotEmpty()) {
                         GatewayStorage.messages.forEach {
-                            GatewayStorage.events.add(Json.decodeFromString(it))
+                            try {
+                                GatewayStorage.events.add(Json.decodeFromString(it))
+                            } catch (err: Exception) {
+                                println(it)
+                                this@GatewayListener.close()
+                            }
                         }
 
                         GatewayStorage.messages.clear()
@@ -107,6 +102,16 @@ class GatewayListener(private val discordClient: DiscordClient) {
             DiscordFlags.Opcode.HELLO -> {
                 GatewayStorage.heartbeatInterval =
                     event.d?.get("heartbeat_interval")!!.jsonPrimitive.int
+
+                val identifier = mapOf(
+                    "token" to discordClient.discordBot.token,
+                    "intents" to discordClient.discordBot.intentFlag,
+                    "properties" to mapOf(
+                        "\$os" to "DiscordBot",
+                        "\$browser" to "discord.kt",
+                        "\$device" to "discord.kt"
+                    )
+                )
 
                 val identifierData = Json.encodeToString(
                     GatewayEvent(2, Json.parseToJsonElement(gson.toJson(identifier)).jsonObject, null, null)
