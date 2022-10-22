@@ -1,4 +1,4 @@
-name: GitHub Actions CI
+name: Code Scan (Detekt)
 
 on:
   push:
@@ -17,4 +17,4 @@ jobs:
       - name: Run Detekt
         uses: natiginfo/action-detekt-all@1.22.0-RC1
         with:
-          args: --build-upon-default-config --all-rules
+          args: --build-upon-default-config
