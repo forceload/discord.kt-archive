@@ -4,10 +4,7 @@ import io.github.teamcrez.discordkt.discord.internal.DiscordBot
 import io.github.teamcrez.discordkt.discord.internal.gateway.GatewayListener
 import io.github.teamcrez.discordkt.discord.internal.gateway.GatewayStorage
 import io.github.teamcrez.discordkt.discord.wrapper.WrapperStorage
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 open class DiscordClient {
     private var clientSession: DiscordClient? = null
@@ -25,7 +22,7 @@ open class DiscordClient {
             val gatewayListener = GatewayListener(clientSession!!)
             while (!gatewayListener.isDisabled) {
                 gatewayListener.run()
-                while (true) { if (!gatewayListener.isRunning) { break } }
+                while (gatewayListener.isRunning && isActive) { delay(1) }
             }
         }
     }

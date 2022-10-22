@@ -1,6 +1,6 @@
 package io.github.teamcrez.discordkt.discord.api
 
-@Suppress("SpellCheckingInspection")
+@Suppress("SpellCheckingInspection", "unused")
 object DiscordFlags {
     object GatewayFlag {
         const val HEARTBEAT_TIMESTAMP_SCALE = 0.6
@@ -30,5 +30,40 @@ object DiscordFlags {
         const val INVAILD_SESSION = 9
         const val HELLO = 10
         const val HEARTBEAT_ACK = 11
+    }
+
+    enum class CommandArgumentType(val intValue: Int) {
+        NULL(-1),
+        
+        SUB_COMMAND(1),
+        SUB_COMMAND_GROUP(2),
+        STRING(3),
+        INTEGER(4),
+        BOOLEAN(5),
+        USER(6),
+        CHANNEL(7),
+        ROLE(8),
+        MENTIONABLE(9),
+        NUMBER(10),
+        ATTACHMENT(11)
+    }
+
+    fun matchType(intValue: Int): CommandArgumentType =
+        when (intValue) {
+            CommandArgumentType.NULL.intValue -> CommandArgumentType.NULL
+            CommandArgumentType.SUB_COMMAND.intValue -> CommandArgumentType.SUB_COMMAND
+            CommandArgumentType.SUB_COMMAND_GROUP.intValue -> CommandArgumentType.SUB_COMMAND_GROUP
+            CommandArgumentType.STRING.intValue -> CommandArgumentType.STRING
+            CommandArgumentType.INTEGER.intValue -> CommandArgumentType.INTEGER
+            CommandArgumentType.BOOLEAN.intValue -> CommandArgumentType.BOOLEAN
+            CommandArgumentType.USER.intValue -> CommandArgumentType.USER
+            CommandArgumentType.CHANNEL.intValue -> CommandArgumentType.CHANNEL
+            CommandArgumentType.ROLE.intValue -> CommandArgumentType.ROLE
+            CommandArgumentType.MENTIONABLE.intValue -> CommandArgumentType.MENTIONABLE
+            CommandArgumentType.NUMBER.intValue -> CommandArgumentType.NUMBER
+            CommandArgumentType.ATTACHMENT.intValue -> CommandArgumentType.ATTACHMENT
+        else -> {
+            CommandArgumentType.NULL
+        }
     }
 }

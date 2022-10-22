@@ -2,6 +2,9 @@ package io.github.teamcrez.discordkt.discord.wrapper
 
 import com.google.gson.JsonParser
 import io.github.teamcrez.discordkt.discord.APIRequester
+import io.github.teamcrez.discordkt.discord.api.DiscordFlags
+import io.github.teamcrez.discordkt.discord.types.DiscordString
+import io.github.teamcrez.discordkt.discord.types.DiscordType
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
@@ -33,5 +36,12 @@ class DiscordUser(var id: String) {
         }
 
         dmChannel.sendMessage(message)
+    }
+
+    fun directMessage(message: DiscordType<*>) {
+        if (message.type == DiscordFlags.CommandArgumentType.STRING) {
+            message as DiscordString
+            directMessage(message.coveredValue)
+        }
     }
 }
