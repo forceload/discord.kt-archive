@@ -13,7 +13,11 @@ import java.net.URL
 @Suppress("MemberVisibilityCanBePrivate")
 object RequestUtil {
 
-    fun request(url: URL, header: MutableMap<String, String>? = null, params: MutableMap<String, Any>? = null, method: String = "GET", contentType: String = "application/x-www-form-urlencoded", additionalParams: String = ""): JsonObject {
+    fun request(
+        url: URL, header: MutableMap<String, String>? = null, params: MutableMap<String, Any>? = null,
+        method: String = "GET", contentType: String = "application/x-www-form-urlencoded",
+        additionalParams: String = ""
+    ): JsonObject {
         val reqURLString = StringBuilder()
         reqURLString.append(url)
 
