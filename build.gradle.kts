@@ -36,5 +36,5 @@ compileTestKotlin.kotlinOptions {
 }
 
 detekt {
-    config = files(".github/config/detekt.yml")
+    config = files("detekt.yml")
 }
