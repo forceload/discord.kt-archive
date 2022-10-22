@@ -13,6 +13,7 @@ import java.net.URL
 @Suppress("MemberVisibilityCanBePrivate")
 object RequestUtil {
 
+    const val defaultRequestStatus: Int = 200
     fun request(
         url: URL, header: MutableMap<String, String>? = null, params: MutableMap<String, Any>? = null,
         method: String = "GET", contentType: String = "application/x-www-form-urlencoded",
@@ -51,7 +52,7 @@ object RequestUtil {
             }
         }
 
-        return Json.encodeToJsonElement(Response(200, responseString)).jsonObject
+        return Json.encodeToJsonElement(Response(defaultRequestStatus, responseString)).jsonObject
     }
 
     fun request(url: String, header: MutableMap<String, String>? = null, params: MutableMap<String, Any>? = null, method: String = "GET", contentType: String = "application/x-www-form-urlencoded", additionalParams: String = "") =

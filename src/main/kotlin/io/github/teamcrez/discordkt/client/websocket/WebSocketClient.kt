@@ -1,16 +1,20 @@
 package io.github.teamcrez.discordkt.client.websocket
 
-import okhttp3.*
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
 import java.util.concurrent.TimeUnit
 
 class WebSocketClient(url: String, listener: WebSocketListener) {
 
     val webSocket: WebSocket
+    private val defaultTimeout: Long = 5
     private val client: OkHttpClient = OkHttpClient.Builder()
         .retryOnConnectionFailure(true)
-        .readTimeout(5, TimeUnit.SECONDS)
-        .writeTimeout(5, TimeUnit.SECONDS)
-        .connectTimeout(5, TimeUnit.SECONDS)
+        .readTimeout(defaultTimeout, TimeUnit.SECONDS)
+        .writeTimeout(defaultTimeout, TimeUnit.SECONDS)
+        .connectTimeout(defaultTimeout, TimeUnit.SECONDS)
         .build()
     private val request: Request
 

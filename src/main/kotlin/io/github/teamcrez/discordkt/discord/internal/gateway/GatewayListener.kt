@@ -3,15 +3,23 @@ package io.github.teamcrez.discordkt.discord.internal.gateway
 import com.google.gson.Gson
 import io.github.teamcrez.discordkt.client.websocket.WebSocketClient
 import io.github.teamcrez.discordkt.discord.DiscordClient
+import io.github.teamcrez.discordkt.discord.api.DiscordFlags
 import io.github.teamcrez.discordkt.discord.internal.gateway.event.GatewayEvent
 import io.github.teamcrez.discordkt.discord.internal.gateway.manager.CommandManager
 import io.github.teamcrez.discordkt.discord.internal.gateway.manager.HeartbeatManager
 import io.github.teamcrez.discordkt.discord.internal.gateway.socket.InternalGatewayListener
-import kotlinx.coroutines.*
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
-
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 class GatewayListener(private val discordClient: DiscordClient) {
 
@@ -86,17 +94,17 @@ class GatewayListener(private val discordClient: DiscordClient) {
 
         if (discordClient.debug) { println(event) }
         when (event.op) {
-            0 -> {
+            DiscordFlags.Opcode.DISPATCH -> {
                 if (event.t == "INTERACTION_CREATE") {
                     CommandManager.processCommand(event)
                 }
             }
 
-            7 -> {
+            DiscordFlags.Opcode.RECONNECT -> {
                 this.close()
             }
 
-            10 -> {
+            DiscordFlags.Opcode.HELLO -> {
                 GatewayStorage.heartbeatInterval =
                     event.d?.get("heartbeat_interval")!!.jsonPrimitive.int
 
@@ -107,7 +115,7 @@ class GatewayListener(private val discordClient: DiscordClient) {
                 client.webSocket.send(identifierData)
             }
 
-            11 -> {
+            DiscordFlags.Opcode.HEARTBEAT_ACK -> {
 
             }
         }
