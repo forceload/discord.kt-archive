@@ -3,6 +3,7 @@ package io.github.teamcrez.discordkt.discord.api
 @Suppress("SpellCheckingInspection", "unused")
 object DiscordFlags {
     object GatewayFlag {
+        const val DEFAULT_DISABLE_CODE = 1000
         const val HEARTBEAT_TIMESTAMP_SCALE = 0.6
         const val DEFAULT_TIMEOUT: Long = 5
     }

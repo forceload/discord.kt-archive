@@ -25,7 +25,7 @@ class WebSocketClient(url: String, listener: WebSocketListener) {
     }
 
     fun disable() {
-        webSocket.close(1000, "Client Disabled")
+        webSocket.close(DiscordFlags.GatewayFlag.DEFAULT_DISABLE_CODE, "Client Disabled")
     }
 
 }

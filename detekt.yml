@@ -2,4 +2,4 @@
 
 complexity:
   LongParameterList:
-    ignoreDefaultParameters: true
+    excludes: ["**"]
