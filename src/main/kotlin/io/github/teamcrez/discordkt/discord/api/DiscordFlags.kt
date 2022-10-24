@@ -48,7 +48,7 @@ object DiscordFlags {
         ATTACHMENT(11)
     }
 
-    fun matchType(intValue: Int): CommandArgumentType =
+    fun matchArgumentType(intValue: Int): CommandArgumentType =
         when (intValue) {
             CommandArgumentType.NULL.intValue -> CommandArgumentType.NULL
             CommandArgumentType.SUB_COMMAND.intValue -> CommandArgumentType.SUB_COMMAND
@@ -65,5 +65,55 @@ object DiscordFlags {
         else -> {
             CommandArgumentType.NULL
         }
+    }
+
+    enum class ChannelType(val intValue: Int) {
+        NULL(-1),
+
+        GUILD_TEXT(0),
+        DM(1),
+        GUILD_VOICE(2),
+        GROUP_DM(3),
+        GUILD_CATEGORY(4),
+        GUILD_ANNOUNCEMENT(5),
+        ANNOUNCEMENT_THREAD(10),
+        PUBLIC_THREAD(11),
+        PRIVATE_THREAD(12),
+        GUILD_STAGE_VOICE(13),
+        GUILD_DIRECTORY(14),
+        GUILD_FORUM(15);
+
+        fun isOnGuild() = (this == GUILD_TEXT || this == GUILD_VOICE || this == GUILD_CATEGORY ||
+                    this == GUILD_ANNOUNCEMENT || this == ANNOUNCEMENT_THREAD ||
+                    this == PUBLIC_THREAD || this == PRIVATE_THREAD ||
+                    this == GUILD_STAGE_VOICE || this == GUILD_FORUM ||
+                    this == GUILD_DIRECTORY)
+    }
+
+    fun matchChannelType(intValue: Int): ChannelType =
+        when (intValue) {
+            ChannelType.NULL.intValue -> ChannelType.NULL
+            ChannelType.GUILD_TEXT.intValue -> ChannelType.GUILD_TEXT
+            ChannelType.DM.intValue -> ChannelType.DM
+            ChannelType.GUILD_VOICE.intValue -> ChannelType.GUILD_VOICE
+            ChannelType.GROUP_DM.intValue -> ChannelType.GROUP_DM
+            ChannelType.GUILD_CATEGORY.intValue -> ChannelType.GUILD_CATEGORY
+            ChannelType.GUILD_ANNOUNCEMENT.intValue -> ChannelType.GUILD_ANNOUNCEMENT
+            ChannelType.ANNOUNCEMENT_THREAD.intValue -> ChannelType.ANNOUNCEMENT_THREAD
+            ChannelType.PUBLIC_THREAD.intValue -> ChannelType.PUBLIC_THREAD
+            ChannelType.PRIVATE_THREAD.intValue -> ChannelType.PRIVATE_THREAD
+            ChannelType.GUILD_STAGE_VOICE.intValue -> ChannelType.GUILD_STAGE_VOICE
+            ChannelType.GUILD_DIRECTORY.intValue -> ChannelType.GUILD_DIRECTORY
+            ChannelType.GUILD_FORUM.intValue -> ChannelType.GUILD_FORUM
+            else -> {
+                ChannelType.NULL
+            }
+        }
+
+    object SystemChannelFlags {
+        const val SUPPRESS_JOIN_NOTIFICATIONS = (1 shl 0).toByte()
+        const val SUPPRESS_PREMIUM_SUBSCRIPTIONS = (1 shl 1).toByte()
+        const val SUPPRESS_GUILD_REMINDER_NOTIFICATIONS = (1 shl 2).toByte()
+        const val SUPPRESS_JOIN_NOTIFICATION_REPLIES = (1 shl 3).toByte()
     }
 }

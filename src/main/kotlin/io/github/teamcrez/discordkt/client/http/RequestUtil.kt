@@ -5,8 +5,9 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonObject
 import java.io.BufferedReader
-import java.io.DataOutputStream
+import java.io.BufferedWriter
 import java.io.InputStreamReader
+import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -40,10 +41,12 @@ object RequestUtil {
             val postParams =
                 params?.entries?.joinToString(separator = ".", prefix = "?", postfix = "") ?: additionalParams
 
-            conn.setRequestProperty("Content-Type", contentType)
+            conn.setRequestProperty("Content-Type", "$contentType;charset=UTF-8")
             conn.setRequestProperty("Content-Length", postParams.length.toString())
 
-            DataOutputStream(conn.outputStream).use { it.writeBytes(postParams) }
+            BufferedWriter(OutputStreamWriter(conn.outputStream, "UTF-8")).use {
+                it.write(postParams)
+            }
         }
 
         val responseString = StringBuilder()

@@ -25,7 +25,7 @@ object CommandManager {
                 if (event.d["data"]!!.jsonObject["options"] != null) {
                     val options = event.d["data"]!!.jsonObject["options"]
                     options?.jsonArray?.forEach {
-                        when (DiscordFlags.matchType(it.jsonObject["type"]!!.jsonPrimitive.int)) {
+                        when (DiscordFlags.matchArgumentType(it.jsonObject["type"]!!.jsonPrimitive.int)) {
                             STRING -> {
                                 argumentMap[it.jsonObject["name"]!!.jsonPrimitive.content] =
                                     DiscordString(it.jsonObject["value"]!!.jsonPrimitive.content)

@@ -9,10 +9,25 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 object CommandContextGenerator {
-    fun fromEvent(event: GatewayEvent) = CommandContext(
-            DiscordUser(event.d?.get("member")!!.jsonObject["user"]!!.jsonObject["id"]!!.jsonPrimitive.content),
-            DiscordChannel(event.d["channel_id"]!!.jsonPrimitive.content),
+    fun fromEvent(event: GatewayEvent): CommandContext {
+        if (event.d?.get("member") != null) {
+            return CommandContext(
+                DiscordUser(event.d["member"]!!.jsonObject["user"]!!.jsonObject["id"]!!.jsonPrimitive.content),
+                DiscordChannel(event.d["channel_id"]!!.jsonPrimitive.content),
 
-            DiscordInteraction(event.d["id"]!!.jsonPrimitive.content, event.d["token"]!!.jsonPrimitive.content)
-        )
+                DiscordInteraction(event.d["id"]!!.jsonPrimitive.content, event.d["token"]!!.jsonPrimitive.content)
+            )
+        } else {
+            return CommandContext(
+                DiscordUser(
+                    event.d?.get("user")!!.jsonObject["id"]!!.jsonPrimitive.content,
+                    event.d["user"]!!.jsonObject["username"]!!.jsonPrimitive.content,
+                    event.d["user"]!!.jsonObject["discriminator"]!!.jsonPrimitive.content
+                ),
+                DiscordChannel(event.d["channel_id"]!!.jsonPrimitive.content),
+
+                DiscordInteraction(event.d["id"]!!.jsonPrimitive.content, event.d["token"]!!.jsonPrimitive.content)
+            )
+        }
+    }
 }
