@@ -54,21 +54,26 @@ class CommandComponent(
             JsonParser.parseString(bot.commands["data"].toString()).asString
         ).asJsonArray.forEach { jsonCommand ->
             var sameData = 0
+            var comparisonSize = 0
             commandJsonData.forEach {
-                if (!jsonCommand.asJsonObject[it.key].isJsonArray) {
-                    if (jsonCommand.asJsonObject[it.key].asString == it.value.toString()) {
-                        if (it.key == "name")
-                            sameData += commandJsonData.size
-                        sameData++
+                if (jsonCommand.asJsonObject[it.key] != null) {
+                    if (!jsonCommand.asJsonObject[it.key].isJsonArray) {
+                        if (jsonCommand.asJsonObject[it.key].asString == it.value.toString()) {
+                            if (it.key == "name")
+                                sameData += commandJsonData.size
+                            sameData++
+                        }
+                    } else {
+                        if (jsonCommand.asJsonObject[it.key].toString() == it.value.toString()) {
+                            sameData++
+                        }
                     }
-                } else {
-                    if (jsonCommand.asJsonObject[it.key].toString() == it.value.toString()) {
-                        sameData++
-                    }
+
+                    comparisonSize++
                 }
             }
 
-            if (sameData == commandJsonData.size * 2) {
+            if (sameData == comparisonSize * 2) {
                 isFirst = false
                 return@forEach
             }

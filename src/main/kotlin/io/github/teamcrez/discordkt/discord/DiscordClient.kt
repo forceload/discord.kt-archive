@@ -4,7 +4,12 @@ import io.github.teamcrez.discordkt.discord.internal.DiscordBot
 import io.github.teamcrez.discordkt.discord.internal.gateway.GatewayListener
 import io.github.teamcrez.discordkt.discord.internal.gateway.GatewayStorage
 import io.github.teamcrez.discordkt.discord.wrapper.WrapperStorage
-import kotlinx.coroutines.*
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 open class DiscordClient {
     private var clientSession: DiscordClient? = null

@@ -1,7 +1,6 @@
 package io.github.teamcrez.discordkt.discord.internal.gateway.manager
 
 import io.github.teamcrez.discordkt.discord.api.DiscordFlags
-import io.github.teamcrez.discordkt.discord.api.DiscordFlags.CommandArgumentType.*
 import io.github.teamcrez.discordkt.discord.collections.DiscordArgumentMap
 import io.github.teamcrez.discordkt.discord.internal.command.CommandStorage
 import io.github.teamcrez.discordkt.discord.internal.command.context.CommandData
@@ -25,26 +24,26 @@ object CommandManager {
                 if (event.d["data"]!!.jsonObject["options"] != null) {
                     val options = event.d["data"]!!.jsonObject["options"]
                     options?.jsonArray?.forEach {
-                        when (DiscordFlags.matchType(it.jsonObject["type"]!!.jsonPrimitive.int)) {
-                            STRING -> {
+                        when (DiscordFlags.matchArgumentType(it.jsonObject["type"]!!.jsonPrimitive.int)) {
+                            DiscordFlags.CommandArgumentType.STRING -> {
                                 argumentMap[it.jsonObject["name"]!!.jsonPrimitive.content] =
                                     DiscordString(it.jsonObject["value"]!!.jsonPrimitive.content)
                             }
 
-                            NULL -> {
+                            DiscordFlags.CommandArgumentType.NULL -> {
                                 argumentMap[it.jsonObject["name"]!!.jsonPrimitive.content] = DiscordNull()
                             }
 
-                            SUB_COMMAND -> TODO()
-                            SUB_COMMAND_GROUP -> TODO()
-                            INTEGER -> TODO()
-                            BOOLEAN -> TODO()
-                            USER -> TODO()
-                            CHANNEL -> TODO()
-                            ROLE -> TODO()
-                            MENTIONABLE -> TODO()
-                            NUMBER -> TODO()
-                            ATTACHMENT -> TODO()
+                            DiscordFlags.CommandArgumentType.SUB_COMMAND -> TODO()
+                            DiscordFlags.CommandArgumentType.SUB_COMMAND_GROUP -> TODO()
+                            DiscordFlags.CommandArgumentType.INTEGER -> TODO()
+                            DiscordFlags.CommandArgumentType.BOOLEAN -> TODO()
+                            DiscordFlags.CommandArgumentType.USER -> TODO()
+                            DiscordFlags.CommandArgumentType.CHANNEL -> TODO()
+                            DiscordFlags.CommandArgumentType.ROLE -> TODO()
+                            DiscordFlags.CommandArgumentType.MENTIONABLE -> TODO()
+                            DiscordFlags.CommandArgumentType.NUMBER -> TODO()
+                            DiscordFlags.CommandArgumentType.ATTACHMENT -> TODO()
                         }
                     }
                 }

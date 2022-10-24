@@ -9,11 +9,34 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 @Suppress("MemberVisibilityCanBePrivate")
-class DiscordUser(var id: String) {
+class DiscordUser {
     private var isDMOpened = false
     private lateinit var dmChannel: DiscordChannel
 
-    init {
+    val id: String
+    val name: String
+    val discriminator: String
+
+    // Constructor with API call overhead (for general use)
+    constructor(id: String) {
+        this.id = id
+        val internalUser = APIRequester.getRequest("users/$id")
+
+        name = internalUser["username"]!!.jsonPrimitive.content
+        discriminator = internalUser["discriminator"]!!.jsonPrimitive.content
+
+        if (WrapperStorage.userChannel.keys.contains(id)) {
+            dmChannel = WrapperStorage.userChannel[id]!!
+            isDMOpened = true
+        }
+    }
+
+    // Constructor without API call overhead (for internal use)
+    constructor(id: String, name: String, discriminator: String) {
+        this.id = id
+        this.name = name
+        this.discriminator = discriminator
+
         if (WrapperStorage.userChannel.keys.contains(id)) {
             dmChannel = WrapperStorage.userChannel[id]!!
             isDMOpened = true
