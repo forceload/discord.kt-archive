@@ -8,4 +8,6 @@ class DiscordNull : DiscordType<Unit?> {
     override fun getValue(): Unit? {
         return null
     }
+
+    override fun toString() = "null"
 }

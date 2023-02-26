@@ -24,16 +24,11 @@ object CommandManager {
                 if (event.d["data"]!!.jsonObject["options"] != null) {
                     val options = event.d["data"]!!.jsonObject["options"]
                     options?.jsonArray?.forEach {
-                        when (DiscordFlags.matchArgumentType(it.jsonObject["type"]!!.jsonPrimitive.int)) {
-                            DiscordFlags.CommandArgumentType.STRING -> {
-                                argumentMap[it.jsonObject["name"]!!.jsonPrimitive.content] =
-                                    DiscordString(it.jsonObject["value"]!!.jsonPrimitive.content)
-                            }
+                        argumentMap[it.jsonObject["name"]!!.jsonPrimitive.content] = when (DiscordFlags.matchArgumentType(it.jsonObject["type"]!!.jsonPrimitive.int)) {
+                            DiscordFlags.CommandArgumentType.STRING ->
+                                DiscordString(it.jsonObject["value"]!!.jsonPrimitive.content)
 
-                            DiscordFlags.CommandArgumentType.NULL -> {
-                                argumentMap[it.jsonObject["name"]!!.jsonPrimitive.content] = DiscordNull()
-                            }
-
+                            DiscordFlags.CommandArgumentType.NULL -> DiscordNull()
                             DiscordFlags.CommandArgumentType.SUB_COMMAND -> TODO()
                             DiscordFlags.CommandArgumentType.SUB_COMMAND_GROUP -> TODO()
                             DiscordFlags.CommandArgumentType.INTEGER -> TODO()

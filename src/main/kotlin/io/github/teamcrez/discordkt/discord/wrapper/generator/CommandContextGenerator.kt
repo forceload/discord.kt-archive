@@ -12,7 +12,11 @@ object CommandContextGenerator {
     fun fromEvent(event: GatewayEvent): CommandContext {
         if (event.d?.get("member") != null) {
             return CommandContext(
-                DiscordUser(event.d["member"]!!.jsonObject["user"]!!.jsonObject["id"]!!.jsonPrimitive.content),
+                DiscordUser(
+                    event.d["member"]!!.jsonObject["user"]!!.jsonObject["id"]!!.jsonPrimitive.content,
+                    event.d["member"]!!.jsonObject["user"]!!.jsonObject["username"]!!.jsonPrimitive.content,
+                    event.d["member"]!!.jsonObject["user"]!!.jsonObject["discriminator"]!!.jsonPrimitive.content
+                ),
                 DiscordChannel(event.d["channel_id"]!!.jsonPrimitive.content),
 
                 DiscordInteraction(event.d["id"]!!.jsonPrimitive.content, event.d["token"]!!.jsonPrimitive.content)
