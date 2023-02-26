@@ -7,4 +7,6 @@ class DiscordString(override val coveredValue: String) : DiscordType<String> {
     override fun getValue(): String {
         return coveredValue
     }
+
+    override fun toString() = this.coveredValue
 }

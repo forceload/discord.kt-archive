@@ -22,7 +22,7 @@ class TestBot: DiscordClient() {
                         description = "Message"
                     )
                 ), description = "Send DM to the user itself") {
-                    this.context.interaction.reply("DM이 전송되었습니다")
+                    this.context.interaction.reply("DM이 전송되었습니다", DiscordFlags.MessageFlag.EPHEMERAL)
                     this.context.user.directMessage(this.args["message"])
                 }
 
@@ -37,7 +37,7 @@ class TestBot: DiscordClient() {
                         )
                     )
                 ), description = "Send DM to the user itself") {
-                    this.context.interaction.reply("DM이 전송되었습니다")
+                    this.context.interaction.reply("DM이 전송되었습니다", DiscordFlags.MessageFlag.EPHEMERAL)
                     this.context.user.directMessage(this.args["message"])
                 }
             }
