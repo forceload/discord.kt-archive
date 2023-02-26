@@ -9,5 +9,4 @@ object GatewayStorage {
 
     var heartbeatInterval: Int = -1
     var sequenceNumber: Int? = null
-
 }

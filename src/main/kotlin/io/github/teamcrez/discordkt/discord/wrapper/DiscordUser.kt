@@ -5,6 +5,7 @@ import io.github.teamcrez.discordkt.discord.APIRequester
 import io.github.teamcrez.discordkt.discord.api.DiscordFlags
 import io.github.teamcrez.discordkt.discord.types.DiscordString
 import io.github.teamcrez.discordkt.discord.types.DiscordType
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
@@ -21,9 +22,10 @@ class DiscordUser {
     constructor(id: String) {
         this.id = id
         val internalUser = APIRequester.getRequest("users/$id")
+        val internalUserData = Json.parseToJsonElement(internalUser["data"]!!.jsonPrimitive.content).jsonObject
 
-        name = internalUser["username"]!!.jsonPrimitive.content
-        discriminator = internalUser["discriminator"]!!.jsonPrimitive.content
+        name = internalUserData["username"]!!.jsonPrimitive.content
+        discriminator = internalUserData["discriminator"]!!.jsonPrimitive.content
 
         if (WrapperStorage.userChannel.keys.contains(id)) {
             dmChannel = WrapperStorage.userChannel[id]!!

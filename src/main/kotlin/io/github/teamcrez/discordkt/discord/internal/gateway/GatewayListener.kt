@@ -14,6 +14,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -21,6 +23,7 @@ import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
+@Suppress("unused")
 class GatewayListener(private val discordClient: DiscordClient) {
 
     private var gson = Gson()
@@ -33,6 +36,7 @@ class GatewayListener(private val discordClient: DiscordClient) {
     suspend fun run() {
         client = WebSocketClient("wss://gateway.discord.gg/?v=10&encoding=json", InternalGatewayListener())
 
+        val eventMutex = Mutex(locked = false)
         if (!isDisabled) { isRunning = true }
         GlobalScope.launch(Dispatchers.Default) {
             launch {
@@ -42,9 +46,11 @@ class GatewayListener(private val discordClient: DiscordClient) {
             launch {
                 while (isActive && isRunning) {
                     if (GatewayStorage.events.isNotEmpty()) {
-                        GatewayStorage.events.forEach {
-                            processGatewayEvent(it)
-                        }
+                        eventMutex.withLock {}
+
+                        eventMutex.lock()
+                        GatewayStorage.events.forEach { processGatewayEvent(it) }
+                        eventMutex.unlock()
 
                         GatewayStorage.events.clear()
                     }
@@ -57,7 +63,11 @@ class GatewayListener(private val discordClient: DiscordClient) {
                     if (GatewayStorage.messages.isNotEmpty()) {
                         GatewayStorage.messages.forEach {
                             try {
+                                eventMutex.withLock {}
+
+                                eventMutex.lock()
                                 GatewayStorage.events.add(Json.decodeFromString(it))
+                                eventMutex.unlock()
                             } catch (err: Exception) {
                                 println(it)
                                 this@GatewayListener.close()

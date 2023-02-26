@@ -4,7 +4,10 @@ import com.google.gson.JsonParser
 import io.github.teamcrez.discordkt.discord.APIRequester
 import io.github.teamcrez.discordkt.discord.DiscordClient
 import kotlinx.serialization.json.JsonObject
+import java.io.IOException
+import kotlin.system.exitProcess
 
+@Suppress("unused")
 class DiscordBot(val client: DiscordClient) {
     var id: String?
         get() = internalID
@@ -31,20 +34,24 @@ class DiscordBot(val client: DiscordClient) {
     lateinit var commandObject: Commands
 
     fun commands(init: Commands.() -> Unit) {
-        commands = APIRequester.getRequest("applications/$id/commands")
+        try {
+            commands = APIRequester.getRequest("applications/$id/commands")
 
-        commandObject = Commands(this)
-        commandObject.init()
+            commandObject = Commands(this)
+            commandObject.init()
 
-        JsonParser.parseString(
-            JsonParser.parseString(commands["data"].toString()).asString
-        ).asJsonArray.forEach {
-            val apiCommand = it.asJsonObject["name"].asJsonPrimitive.asString
-            if (!commandObject.commandNames.contains(apiCommand)) {
-                APIRequester.deleteRequest(
-                    "applications/$id/commands/${it.asJsonObject["id"].asJsonPrimitive.asString}"
-                )
+            JsonParser.parseString(
+                JsonParser.parseString(commands["data"].toString()).asString
+            ).asJsonArray.forEach {
+                val apiCommand = it.asJsonObject["name"].asJsonPrimitive.asString
+                if (!commandObject.commandNames.contains(apiCommand)) {
+                    APIRequester.deleteRequest(
+                        "applications/$id/commands/${it.asJsonObject["id"].asJsonPrimitive.asString}"
+                    )
+                }
             }
+        } catch (err: IOException) {
+            exitProcess(-1)
         }
     }
 }

@@ -4,20 +4,25 @@ import io.github.teamcrez.discordkt.discord.collections.DiscordChoiceMap
 import io.github.teamcrez.discordkt.discord.wrapper.CommandArgument
 
 fun main() {
-    TestBot().activate()
+    val bot = TestBot()
+    bot.activate()
 }
 
 class TestBot: DiscordClient() {
     override fun activate(): Boolean {
-        bot(debug = true) {
+        bot(debug = false) {
             id = System.getenv("DISCORD_KT_TEST_USERID")
             token = System.getenv("DISCORD_KT_TEST_TOKEN")
             intentFlag = 8
 
             commands {
                 command("direct_message", args = mapOf(
-                    "message" to CommandArgument(DiscordFlags.CommandArgumentType.STRING, description = "Message")
+                    "message" to CommandArgument(
+                        DiscordFlags.CommandArgumentType.STRING,
+                        description = "Message"
+                    )
                 ), description = "Send DM to the user itself") {
+                    this.context.interaction.reply("DM이 전송되었습니다")
                     this.context.user.directMessage(this.args["message"])
                 }
 
@@ -32,6 +37,7 @@ class TestBot: DiscordClient() {
                         )
                     )
                 ), description = "Send DM to the user itself") {
+                    this.context.interaction.reply("DM이 전송되었습니다")
                     this.context.user.directMessage(this.args["message"])
                 }
             }
