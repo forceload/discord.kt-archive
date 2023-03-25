@@ -6,7 +6,7 @@ import io.github.teamcrez.discordkt.discord.collections.DiscordChoiceMap
 class CommandArgument(
     private val type: DiscordFlags.CommandArgumentType,
     val required: Boolean = true,
-    val choices: DiscordChoiceMap<String> = DiscordChoiceMap(),
+    val choices: DiscordChoiceMap = DiscordChoiceMap(),
     val description: String = "Default Description"
 ) {
     fun getIntType(): Int = type.intValue

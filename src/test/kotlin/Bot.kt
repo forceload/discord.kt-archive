@@ -10,7 +10,7 @@ fun main() {
 
 class TestBot: DiscordClient() {
     override fun activate(): Boolean {
-        bot(debug = false) {
+        bot(debug = true) {
             id = System.getenv("DISCORD_KT_TEST_USERID")
             token = System.getenv("DISCORD_KT_TEST_TOKEN")
             intentFlag = 8
@@ -29,11 +29,8 @@ class TestBot: DiscordClient() {
                 command("direct_message_select", args = mapOf(
                     "message" to CommandArgument(
                         DiscordFlags.CommandArgumentType.STRING,
-                        description = "Message", choices = DiscordChoiceMap<String>().applyMap(
-                            mutableMapOf(
-                                "hi" to "hello",
-                                "hello" to "hi"
-                            )
+                        description = "Message", choices = DiscordChoiceMap.applyMap(
+                            4 to "hi", 2 to "hi", "4" to "hi"
                         )
                     )
                 ), description = "Send DM to the user itself") {

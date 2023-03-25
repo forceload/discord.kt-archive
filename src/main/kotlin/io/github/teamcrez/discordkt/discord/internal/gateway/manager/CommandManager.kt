@@ -5,8 +5,8 @@ import io.github.teamcrez.discordkt.discord.collections.DiscordArgumentMap
 import io.github.teamcrez.discordkt.discord.internal.command.CommandStorage
 import io.github.teamcrez.discordkt.discord.internal.command.context.CommandData
 import io.github.teamcrez.discordkt.discord.internal.gateway.event.GatewayEvent
-import io.github.teamcrez.discordkt.discord.types.DiscordNull
-import io.github.teamcrez.discordkt.discord.types.DiscordString
+import io.github.teamcrez.discordkt.discord.types.*
+import io.github.teamcrez.discordkt.discord.wrapper.DiscordUser
 import io.github.teamcrez.discordkt.discord.wrapper.generator.CommandContextGenerator
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonArray
@@ -19,6 +19,7 @@ object CommandManager {
 
         if (CommandStorage.commandProcesses.keys.contains(commandName)) {
             val commandComponent = CommandStorage.commandProcesses[commandName]!!
+
             commandComponent[commandComponent.keys.first()]?.let {
                 val argumentMap = DiscordArgumentMap<String>()
                 if (event.d["data"]!!.jsonObject["options"] != null) {
@@ -31,13 +32,24 @@ object CommandManager {
                             DiscordFlags.CommandArgumentType.NULL -> DiscordNull()
                             DiscordFlags.CommandArgumentType.SUB_COMMAND -> TODO()
                             DiscordFlags.CommandArgumentType.SUB_COMMAND_GROUP -> TODO()
-                            DiscordFlags.CommandArgumentType.INTEGER -> TODO()
-                            DiscordFlags.CommandArgumentType.BOOLEAN -> TODO()
-                            DiscordFlags.CommandArgumentType.USER -> TODO()
+                            DiscordFlags.CommandArgumentType.INTEGER ->
+                                DiscordInteger(it.jsonObject["value"]!!.jsonPrimitive.content.toLong())
+                            DiscordFlags.CommandArgumentType.BOOLEAN ->
+                                DiscordBoolean(it.jsonObject["value"]!!.jsonPrimitive.content.toBoolean())
+                            DiscordFlags.CommandArgumentType.USER -> {
+                                val userJson = event.d["data"]!!.jsonObject["resolved"]!!.jsonObject["users"]!!.jsonObject
+                                val userData = userJson[userJson.keys.first()]!!.jsonObject
+                                DiscordUserType(DiscordUser(
+                                    userData["id"]!!.jsonPrimitive.content,
+                                    userData["username"]!!.jsonPrimitive.content,
+                                    userData["discriminator"]!!.jsonPrimitive.content
+                                ))
+                            }
                             DiscordFlags.CommandArgumentType.CHANNEL -> TODO()
                             DiscordFlags.CommandArgumentType.ROLE -> TODO()
                             DiscordFlags.CommandArgumentType.MENTIONABLE -> TODO()
-                            DiscordFlags.CommandArgumentType.NUMBER -> TODO()
+                            DiscordFlags.CommandArgumentType.NUMBER ->
+                                DiscordNumber(it.jsonObject["value"]!!.jsonPrimitive.content.toDouble())
                             DiscordFlags.CommandArgumentType.ATTACHMENT -> TODO()
                         }
                     }

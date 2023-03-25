@@ -5,7 +5,7 @@ import com.google.gson.JsonParser
 import io.github.teamcrez.discordkt.discord.APIRequester
 import kotlinx.serialization.json.jsonPrimitive
 
-@Suppress("MemberVisibilityCanBePrivate")
+@Suppress("MemberVisibilityCanBePrivate", "jol")
 data class DiscordServer(val id: String) {
     val name: String
     val icon: String?

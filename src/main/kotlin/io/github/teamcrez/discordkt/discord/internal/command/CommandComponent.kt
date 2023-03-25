@@ -30,7 +30,7 @@ class CommandComponent(
                 val choiceArray = JsonArray()
                 optionType.choices.forEach { (choiceName, choiceValue) ->
                     val choiceObject = JsonObject()
-                    choiceObject.addProperty("name", choiceName)
+                    choiceObject.addProperty("name", choiceName.toString())
                     choiceObject.addProperty("value", choiceValue.toString())
 
                     choiceArray.add(choiceObject)

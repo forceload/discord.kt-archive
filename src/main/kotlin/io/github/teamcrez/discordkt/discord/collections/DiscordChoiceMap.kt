@@ -1,11 +1,19 @@
 package io.github.teamcrez.discordkt.discord.collections
 
-class DiscordChoiceMap<K>: MutableMap<K, Any> {
-    private val hashMap: MutableMap<K, Any> = HashMap()
+class DiscordChoiceMap: MutableMap<Any, Any> {
+    companion object {
+        fun applyMap(vararg pairs: Pair<Any, Any>): DiscordChoiceMap {
+            val newMap = DiscordChoiceMap()
+            newMap.putAll(pairs)
+            return newMap
+        }
+    }
 
-    override val entries: MutableSet<MutableMap.MutableEntry<K, Any>>
+    private val hashMap: MutableMap<Any, Any> = HashMap()
+
+    override val entries: MutableSet<MutableMap.MutableEntry<Any, Any>>
         get() = hashMap.entries
-    override val keys: MutableSet<K>
+    override val keys: MutableSet<Any>
         get() = hashMap.keys
     override val size: Int
         get() = hashMap.size
@@ -14,16 +22,11 @@ class DiscordChoiceMap<K>: MutableMap<K, Any> {
 
     override fun clear() = hashMap.clear()
     override fun isEmpty() = hashMap.isEmpty()
-    override fun remove(key: K): Any? = hashMap.remove(key)
-    override fun putAll(from: Map<out K, Any>) = hashMap.putAll(from)
-    override fun put(key: K, value: Any): Any? = hashMap.put(key, value)
+    override fun remove(key: Any): Any? = hashMap.remove(key)
+    override fun putAll(from: Map<out Any, Any>) = hashMap.putAll(from)
+    override fun put(key: Any, value: Any): Any? = hashMap.put(key, value)
 
-    fun applyMap(map: MutableMap<K, Any>): DiscordChoiceMap<K> {
-        this.putAll(map)
-        return this
-    }
-
-    override fun get(key: K): Any {
+    override fun get(key: Any): Any {
         var result = hashMap[key]
         if (result == null) {
             result = ""
@@ -33,5 +36,5 @@ class DiscordChoiceMap<K>: MutableMap<K, Any> {
     }
 
     override fun containsValue(value: Any) = hashMap.containsValue(value)
-    override fun containsKey(key: K): Boolean = hashMap.containsKey(key)
+    override fun containsKey(key: Any): Boolean = hashMap.containsKey(key)
 }
