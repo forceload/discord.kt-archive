@@ -1,7 +1,7 @@
-import io.github.teamcrez.discordkt.discord.DiscordClient
-import io.github.teamcrez.discordkt.discord.api.DiscordFlags
-import io.github.teamcrez.discordkt.discord.collections.DiscordChoiceMap
-import io.github.teamcrez.discordkt.discord.wrapper.CommandArgument
+import io.github.discordkt.discordkt.discord.DiscordClient
+import io.github.discordkt.discordkt.discord.api.DiscordFlags
+import io.github.discordkt.discordkt.discord.collections.DiscordChoiceMap
+import io.github.discordkt.discordkt.discord.wrapper.CommandArgument
 
 fun main() {
     val bot = TestBot()
