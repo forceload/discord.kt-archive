@@ -64,9 +64,6 @@ class DiscordUser {
     }
 
     fun directMessage(message: DiscordType<*>) {
-        if (message.type == DiscordFlags.CommandArgumentType.STRING) {
-            message as DiscordString
-            directMessage(message.coveredValue)
-        }
+        directMessage(message.toString())
     }
 }
