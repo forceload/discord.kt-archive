@@ -26,16 +26,14 @@ class TestBot: DiscordClient() {
                     this.context.user.directMessage(this.args["message"])
                 }
 
-                command("direct_message_select", args = mapOf(
-                    "message" to CommandArgument(
-                        DiscordFlags.CommandArgumentType.STRING,
-                        description = "Message", choices = DiscordChoiceMap.applyMap(
-                            4 to "hi", 2 to "hi", "4" to "hi"
-                        )
+                command("attachment_test", args = mapOf(
+                    "attachment" to CommandArgument(
+                        DiscordFlags.CommandArgumentType.ATTACHMENT,
+                        description = "Attachment"
                     )
                 ), description = "Send DM to the user itself") {
                     this.context.interaction.reply("DM이 전송되었습니다", DiscordFlags.MessageFlag.EPHEMERAL)
-                    this.context.user.directMessage(this.args["message"])
+                    this.context.user.directMessage(this.args["attachment"])
                 }
             }
         }
