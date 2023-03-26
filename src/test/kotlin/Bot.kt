@@ -35,6 +35,15 @@ class TestBot: DiscordClient() {
                     this.context.interaction.reply("DM이 전송되었습니다", DiscordFlags.MessageFlag.EPHEMERAL)
                     this.context.user.directMessage(this.args["attachment"])
                 }
+
+                command("mentionable_test", args = mapOf(
+                    "role" to CommandArgument(
+                        DiscordFlags.CommandArgumentType.MENTIONABLE,
+                        description = "Role"
+                    )
+                )) {
+                    this.context.interaction.reply(this.args["role"], DiscordFlags.MessageFlag.EPHEMERAL)
+                }
             }
         }
 

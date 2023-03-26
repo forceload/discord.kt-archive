@@ -7,4 +7,8 @@ class DiscordRole(
     val icon: String? = null, val unicodeEmoji: String? = null,
     val position: Int, val permissions: String,
     val managed: Boolean, val mentionable: Boolean, val tags: DiscordRoleTag? = null
-)
+) {
+    override fun toString(): String {
+        return "<@&${id}>"
+    }
+}

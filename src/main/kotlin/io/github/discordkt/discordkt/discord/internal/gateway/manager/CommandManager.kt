@@ -6,8 +6,7 @@ import io.github.discordkt.discordkt.discord.internal.command.CommandStorage
 import io.github.discordkt.discordkt.discord.internal.command.context.CommandData
 import io.github.discordkt.discordkt.discord.internal.gateway.event.GatewayEvent
 import io.github.discordkt.discordkt.discord.types.*
-import io.github.discordkt.discordkt.discord.wrapper.DiscordAttachment
-import io.github.discordkt.discordkt.discord.wrapper.DiscordUser
+import io.github.discordkt.discordkt.discord.wrapper.*
 import io.github.discordkt.discordkt.discord.wrapper.generator.CommandContextGenerator
 import kotlinx.serialization.json.*
 
@@ -45,8 +44,34 @@ object CommandManager {
                                     userData["discriminator"]!!.jsonPrimitive.content
                                 ))
                             }
-                            DiscordFlags.CommandArgumentType.CHANNEL -> TODO()
-                            DiscordFlags.CommandArgumentType.ROLE -> TODO()
+
+                            DiscordFlags.CommandArgumentType.CHANNEL -> {
+                                val channelJson = resolved!!.jsonObject["channels"]!!.jsonObject
+                                val channelData = channelJson[channelJson.keys.first()]!!.jsonObject
+                                DiscordChannelType(DiscordChannel(channelData["id"]!!.jsonPrimitive.content))
+                            }
+
+                            DiscordFlags.CommandArgumentType.ROLE -> {
+                                val roleJson = resolved!!.jsonObject["roles"]!!.jsonObject
+                                val roleData = roleJson[roleJson.keys.first()]!!.jsonObject
+
+                                DiscordRoleType(DiscordRole(
+                                    roleData["id"]!!.jsonPrimitive.content,
+                                    roleData["name"]!!.jsonPrimitive.content,
+                                    roleData["color"]!!.jsonPrimitive.int,
+                                    roleData["hoist"]!!.jsonPrimitive.boolean,
+                                    roleData["icon"]!!.jsonPrimitive.contentOrNull,
+                                    roleData["unicode_emoji"]!!.jsonPrimitive.contentOrNull,
+                                    roleData["position"]!!.jsonPrimitive.int,
+                                    roleData["permissions"]!!.jsonPrimitive.content,
+                                    roleData["managed"]!!.jsonPrimitive.boolean,
+                                    roleData["mentionable"]!!.jsonPrimitive.boolean,
+                                    DiscordRoleTag(
+                                        roleData["tags"]?.jsonObject?.get("bot_id")?.jsonPrimitive?.content,
+                                        roleData["tags"]?.jsonObject?.get("integration_id")?.jsonPrimitive?.content
+                                    )
+                                ))
+                            }
                             DiscordFlags.CommandArgumentType.MENTIONABLE -> TODO()
                             DiscordFlags.CommandArgumentType.NUMBER ->
                                 DiscordNumber(it.jsonObject["value"]!!.jsonPrimitive.content.toDouble())
@@ -54,9 +79,9 @@ object CommandManager {
                                 val attachmentJson = resolved!!.jsonObject["attachments"]!!.jsonObject
                                 val attachmentData = attachmentJson[attachmentJson.keys.first()]!!.jsonObject
 
-                                var width: Int? = attachmentData["width"]?.jsonPrimitive?.int
-                                var height: Int? = attachmentData["height"]?.jsonPrimitive?.int
-                                var ephemeral = attachmentData["ephemeral"]?.jsonPrimitive?.boolean ?: false
+                                val width: Int? = attachmentData["width"]?.jsonPrimitive?.int
+                                val height: Int? = attachmentData["height"]?.jsonPrimitive?.int
+                                val ephemeral = attachmentData["ephemeral"]?.jsonPrimitive?.boolean ?: false
 
                                 val description = attachmentData["description"]?.jsonPrimitive?.content ?: ""
                                 val contentType = attachmentData["content_type"]?.jsonPrimitive?.content ?: "text/plain"
