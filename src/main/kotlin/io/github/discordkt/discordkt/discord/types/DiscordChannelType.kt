@@ -1,9 +1,9 @@
 package io.github.discordkt.discordkt.discord.types
 
 import io.github.discordkt.discordkt.discord.api.DiscordFlags
-import io.github.discordkt.discordkt.discord.wrapper.DiscordAttachment
+import io.github.discordkt.discordkt.discord.wrapper.DiscordChannel
 
-class DiscordAttachmentType(override val coveredValue: DiscordAttachment): DiscordType<DiscordAttachment> {
+class DiscordChannelType(override val coveredValue: DiscordChannel): DiscordType<DiscordChannel> {
     override val type = DiscordFlags.CommandArgumentType.ATTACHMENT
     override fun toString() = this.coveredValue.toString()
 }

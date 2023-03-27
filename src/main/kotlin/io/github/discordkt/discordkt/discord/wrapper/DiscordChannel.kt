@@ -26,4 +26,8 @@ data class DiscordChannel(val id: String) {
         val messageData = mapOf("content" to message)
         APIRequester.postRequest("channels/$id/messages", messageData)
     }
+
+    override fun toString(): String {
+        return "<#${id}>"
+    }
 }

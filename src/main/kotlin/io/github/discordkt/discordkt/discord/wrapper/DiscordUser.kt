@@ -16,7 +16,7 @@ class DiscordUser {
     val name: String
     val discriminator: String
 
-    // Constructor with discordkt call overhead (for general use)
+    // Constructor with API call overhead (for general use)
     constructor(id: String) {
         this.id = id
         val internalUser = APIRequester.getRequest("users/$id")
@@ -31,7 +31,7 @@ class DiscordUser {
         }
     }
 
-    // Constructor without discordkt call overhead (for internal use)
+    // Constructor without API call overhead (for internal use)
     constructor(id: String, name: String, discriminator: String) {
         this.id = id
         this.name = name
