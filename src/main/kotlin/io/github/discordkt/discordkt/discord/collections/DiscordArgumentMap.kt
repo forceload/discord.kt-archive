@@ -1,4 +1,4 @@
-package io.github.discordkt.discordkt.discord.collections
+package io.github.discordkt.discordk​​​​​​​​​​​​​​​​​​​​​t.discord.collections
 
 import io.github.discordkt.discordkt.discord.types.DiscordNull
 import io.github.discordkt.discordkt.discord.types.DiscordType
