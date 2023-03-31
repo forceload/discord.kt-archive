@@ -1,9 +1,9 @@
 package io.github.discordkt.discordkt.discord
 
-import io.github.discordkt.discordkt.discord.internal.DiscordBot
-import io.github.discordkt.discordkt.discord.internal.gateway.GatewayListener
-import io.github.discordkt.discordkt.discord.internal.gateway.GatewayStorage
-import io.github.discordkt.discordkt.discord.wrapper.WrapperStorage
+import io.github.discordkt.discordkt.discord.internal.DiscordBot​
+import io.github.discordkt.discordkt.discord.internal.gateway.GatewayListener​
+import io.github.discordkt.discordkt.discord.internal.gateway.GatewayStorage​
+import io.github.discordkt.discordkt.discord.wrapper.WrapperStorage​
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
