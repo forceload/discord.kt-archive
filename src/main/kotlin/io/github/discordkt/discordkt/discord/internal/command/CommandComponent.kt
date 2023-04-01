@@ -1,12 +1,11 @@
 package io.github.discordkt.discordkt.discord.internal.command
 
-import com.google.gson.JsonArray
-import com.google.gson.JsonObject
-import com.google.gson.JsonParser
 import io.github.discordkt.discordkt.discord.APIRequester
 import io.github.discordkt.discordkt.discord.internal.Commands
 import io.github.discordkt.discordkt.discord.internal.DiscordBot
 import io.github.discordkt.discordkt.discord.wrapper.CommandArgument
+import io.github.discordkt.discordkt.serializer.AnySerializer
+import kotlinx.serialization.json.*
 
 class CommandComponent(
     private val command: Commands, bot: DiscordBot,
@@ -15,34 +14,34 @@ class CommandComponent(
     private val args: Map<String, CommandArgument>
 ) {
     private var isFirst: Boolean
+    val isDiffrent: Boolean
 
     init {
-        val generatedOptions = JsonArray()
+        val generatedOptions = ArrayList<JsonObject>()
 
         args.forEach { (optionName, optionType) ->
-            val currentObject = JsonObject()
-            currentObject.addProperty("type", optionType.getIntType())
-            currentObject.addProperty("name", optionName)
-            currentObject.addProperty("description", optionType.description)
-            currentObject.addProperty("required", optionType.required)
+            val currentMap = mutableMapOf<String, Any>(
+                "type" to optionType.getIntType(), "name" to optionName,
+                "description" to optionType.description, "required" to optionType.required
+            )
 
             if (!optionType.choices.isEmpty()) {
-                val choiceArray = JsonArray()
+                val choiceArray = ArrayList<JsonElement>()
                 optionType.choices.forEach { (choiceName, choiceValue) ->
-                    val choiceObject = JsonObject()
-                    choiceObject.addProperty("name", choiceName.toString())
-                    if (choiceValue is Number) {
-                        choiceObject.addProperty("value", choiceValue)
-                    } else {
-                        choiceObject.addProperty("value", choiceValue.toString())
-                    }
+                    val choiceObject = Json.encodeToJsonElement(
+                        mapOf<String, Any>(
+                            "name" to choiceName.toString(),
+                            "value" to if (choiceValue is Number) { choiceValue } else { choiceValue.toString() }
+                        )
+                    )
 
                     choiceArray.add(choiceObject)
                 }
 
-                currentObject.add("choices", choiceArray)
+                currentMap["choices"] = choiceArray
             }
 
+            val currentObject = Json.encodeToJsonElement(AnySerializer, currentMap).jsonObject
             generatedOptions.add(currentObject)
         }
 
@@ -54,21 +53,20 @@ class CommandComponent(
         )
 
         isFirst = true
-        JsonParser.parseString(
-            JsonParser.parseString(bot.commands["data"].toString()).asString
-        ).asJsonArray.forEach { jsonCommand ->
+        var nameExists = false
+        Json.parseToJsonElement(bot.commands["data"]!!.jsonPrimitive.content).jsonArray.forEach { jsonCommand ->
             var sameData = 0
             var comparisonSize = 0
+            val command = jsonCommand.jsonObject
             commandJsonData.forEach {
-                if (jsonCommand.asJsonObject[it.key] != null) {
-                    if (!jsonCommand.asJsonObject[it.key].isJsonArray) {
-                        if (jsonCommand.asJsonObject[it.key].asString == it.value.toString()) {
-                            if (it.key == "name")
-                                sameData += commandJsonData.size
+                if (command[it.key] != null) {
+                    if (command[it.key]!! as? JsonArray == null) {
+                        if (command[it.key]!!.jsonPrimitive.content == it.value.toString()) {
+                            if (it.key == "name") { sameData += commandJsonData.size; nameExists = true }
                             sameData++
                         }
                     } else {
-                        if (jsonCommand.asJsonObject[it.key].toString() == it.value.toString()) {
+                        if (jsonCommand.jsonObject[it.key].hashCode() == it.value.hashCode()) {
                             sameData++
                         }
                     }
@@ -79,12 +77,17 @@ class CommandComponent(
 
             if (sameData == comparisonSize * 2) {
                 isFirst = false
+                print(sameData)
                 return@forEach
             }
         }
 
         if (isFirst) {
+            isDiffrent = false
+            println(commandJsonData)
             APIRequester.postRequest("applications/${bot.id}/commands", commandJsonData)
+        } else {
+            isDiffrent = nameExists
         }
     }
 }

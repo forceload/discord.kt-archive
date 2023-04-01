@@ -1,6 +1,5 @@
 package io.github.discordkt.discordkt.discord.internal.gateway
 
-import com.google.gson.Gson
 import io.github.discordkt.discordkt.client.websocket.WebSocketClient
 import io.github.discordkt.discordkt.discord.DiscordClient
 import io.github.discordkt.discordkt.discord.api.DiscordFlags
@@ -8,6 +7,7 @@ import io.github.discordkt.discordkt.discord.internal.gateway.event.GatewayEvent
 import io.github.discordkt.discordkt.discord.internal.gateway.manager.CommandManager
 import io.github.discordkt.discordkt.discord.internal.gateway.manager.HeartbeatManager
 import io.github.discordkt.discordkt.discord.internal.gateway.socket.InternalGatewayListener
+import io.github.discordkt.discordkt.serializer.AnySerializer
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Dispatchers
@@ -18,15 +18,11 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.int
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.*
+import kotlinx.serialization.json.Json.Default.encodeToJsonElement
 
 @Suppress("unused")
 class GatewayListener(private val discordClient: DiscordClient) {
-
-    private var gson = Gson()
     lateinit var client: WebSocketClient
 
     var isRunning = true
@@ -124,7 +120,7 @@ class GatewayListener(private val discordClient: DiscordClient) {
                 )
 
                 val identifierData = Json.encodeToString(
-                    GatewayEvent(2, Json.parseToJsonElement(gson.toJson(identifier)).jsonObject, null, null)
+                    GatewayEvent(2, Json.encodeToJsonElement(AnySerializer, identifier).jsonObject, null, null)
                 )
 
                 client.webSocket.send(identifierData)

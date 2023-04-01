@@ -1,6 +1,5 @@
 package io.github.discordkt.discordkt.discord.wrapper
 
-import com.google.gson.JsonParser
 import io.github.discordkt.discordkt.discord.APIRequester
 import io.github.discordkt.discordkt.discord.types.DiscordType
 import kotlinx.serialization.json.Json
@@ -46,12 +45,13 @@ class DiscordUser {
     fun directMessage(message: String) {
         if (!isDMOpened) {
             val dmChannelData = mapOf("recipient_id" to id)
+
             dmChannel = DiscordChannel(
-                JsonParser.parseString(
+                Json.parseToJsonElement(
                     APIRequester.postRequest(
                         "users/@me/channels", dmChannelData
                     ).jsonObject["data"]!!.jsonPrimitive.content
-                ).asJsonObject["id"].asJsonPrimitive.asString
+                ).jsonObject["id"]!!.jsonPrimitive.content
             )
 
             WrapperStorage.userChannel[id] = dmChannel

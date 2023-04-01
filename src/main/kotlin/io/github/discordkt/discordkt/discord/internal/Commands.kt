@@ -15,6 +15,7 @@ class Commands(private val bot: DiscordBot) {
     ) {
         commandNames.add(commandName)
         val component = CommandComponent(this, bot, commandName, description, args)
+
         CommandStorage.commandProcesses[commandName] = mapOf(component to generateCommand { commandFunc() })
     }
 

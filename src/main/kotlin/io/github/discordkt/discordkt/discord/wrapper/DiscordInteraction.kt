@@ -4,7 +4,7 @@ import io.github.discordkt.discordkt.discord.APIRequester
 import io.github.discordkt.discordkt.discord.types.DiscordType
 
 data class DiscordInteraction(val id: String, val token: String) {
-    fun interact(type: Int?, params: Map<*, *>? = HashMap<Any, Any>()) {
+    fun interact(type: Int?, params: Map<Any, Any> = HashMap()) {
         if (type == null) {
             APIRequester.postRequest("interactions/$id/$token/callback", mapOf(
                 "type" to 1,
