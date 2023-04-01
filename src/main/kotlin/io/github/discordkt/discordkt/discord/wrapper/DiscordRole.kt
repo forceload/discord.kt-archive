@@ -8,7 +8,5 @@ class DiscordRole(
     val position: Int, val permissions: String,
     val managed: Boolean, val mentionable: Boolean, val tags: DiscordRoleTag? = null
 ) {
-    override fun toString(): String {
-        return "<@&${id}>"
-    }
+    override fun toString(): String = if (name == "@everyone" && position == 0) { "@everyone" } else { "<@&${id}>" }
 }
