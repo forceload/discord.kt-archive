@@ -1,9 +1,8 @@
 package io.github.discordkt.discordkt.discord.internal
 
-import com.google.gson.JsonParser
 import io.github.discordkt.discordkt.discord.APIRequester
 import io.github.discordkt.discordkt.discord.DiscordClient
-import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.*
 import java.io.IOException
 import kotlin.system.exitProcess
 
@@ -40,13 +39,11 @@ class DiscordBot(val client: DiscordClient) {
             commandObject = Commands(this)
             commandObject.init()
 
-            JsonParser.parseString(
-                JsonParser.parseString(commands["data"].toString()).asString
-            ).asJsonArray.forEach {
-                val apiCommand = it.asJsonObject["name"].asJsonPrimitive.asString
+            Json.parseToJsonElement(commands["data"]!!.jsonPrimitive.content).jsonArray.forEach {
+                val apiCommand = it.jsonObject["name"]!!.jsonPrimitive.content
                 if (!commandObject.commandNames.contains(apiCommand)) {
                     APIRequester.deleteRequest(
-                        "applications/$id/commands/${it.asJsonObject["id"].asJsonPrimitive.asString}"
+                        "applications/$id/commands/${it.jsonObject["id"]!!.jsonPrimitive.content}"
                     )
                 }
             }

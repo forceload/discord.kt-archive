@@ -34,45 +34,23 @@ object CommandManager {
                                 DiscordInteger(it.jsonObject["value"]!!.jsonPrimitive.content.toLong())
                             DiscordFlags.CommandArgumentType.BOOLEAN ->
                                 DiscordBoolean(it.jsonObject["value"]!!.jsonPrimitive.content.toBoolean())
-                            DiscordFlags.CommandArgumentType.USER -> {
-                                val userJson = resolved!!.jsonObject["users"]!!.jsonObject
-                                val userData = userJson[userJson.keys.first()]!!.jsonObject
-
-                                DiscordUserType(DiscordUser(
-                                    userData["id"]!!.jsonPrimitive.content,
-                                    userData["username"]!!.jsonPrimitive.content,
-                                    userData["discriminator"]!!.jsonPrimitive.content
-                                ))
-                            }
-
+                            DiscordFlags.CommandArgumentType.USER -> parseUser(resolved!!)
                             DiscordFlags.CommandArgumentType.CHANNEL -> {
                                 val channelJson = resolved!!.jsonObject["channels"]!!.jsonObject
                                 val channelData = channelJson[channelJson.keys.first()]!!.jsonObject
                                 DiscordChannelType(DiscordChannel(channelData["id"]!!.jsonPrimitive.content))
                             }
 
-                            DiscordFlags.CommandArgumentType.ROLE -> {
-                                val roleJson = resolved!!.jsonObject["roles"]!!.jsonObject
-                                val roleData = roleJson[roleJson.keys.first()]!!.jsonObject
+                            DiscordFlags.CommandArgumentType.ROLE -> parseRole(resolved!!)
+                            DiscordFlags.CommandArgumentType.MENTIONABLE ->
+                                if (resolved!!.jsonObject["roles"] != null) {
+                                    parseRole(resolved)
+                                } else if (resolved.jsonObject["users"] != null) {
+                                    parseUser(resolved)
+                                } else {
+                                    DiscordNull()
+                                }
 
-                                DiscordRoleType(DiscordRole(
-                                    roleData["id"]!!.jsonPrimitive.content,
-                                    roleData["name"]!!.jsonPrimitive.content,
-                                    roleData["color"]!!.jsonPrimitive.int,
-                                    roleData["hoist"]!!.jsonPrimitive.boolean,
-                                    roleData["icon"]!!.jsonPrimitive.contentOrNull,
-                                    roleData["unicode_emoji"]!!.jsonPrimitive.contentOrNull,
-                                    roleData["position"]!!.jsonPrimitive.int,
-                                    roleData["permissions"]!!.jsonPrimitive.content,
-                                    roleData["managed"]!!.jsonPrimitive.boolean,
-                                    roleData["mentionable"]!!.jsonPrimitive.boolean,
-                                    DiscordRoleTag(
-                                        roleData["tags"]?.jsonObject?.get("bot_id")?.jsonPrimitive?.content,
-                                        roleData["tags"]?.jsonObject?.get("integration_id")?.jsonPrimitive?.content
-                                    )
-                                ))
-                            }
-                            DiscordFlags.CommandArgumentType.MENTIONABLE -> TODO()
                             DiscordFlags.CommandArgumentType.NUMBER ->
                                 DiscordNumber(it.jsonObject["value"]!!.jsonPrimitive.content.toDouble())
                             DiscordFlags.CommandArgumentType.ATTACHMENT -> {
@@ -100,10 +78,41 @@ object CommandManager {
                     }
                 }
 
-                it(
-                    CommandData(CommandContextGenerator.fromEvent(event), args = argumentMap)
-                )
+                it(CommandData(CommandContextGenerator.fromEvent(event), args = argumentMap))
             }
         }
+    }
+
+    private fun parseUser(resolved: JsonElement): DiscordUserType {
+        val userJson = resolved.jsonObject["users"]!!.jsonObject
+        val userData = userJson[userJson.keys.first()]!!.jsonObject
+
+        return DiscordUserType(DiscordUser(
+            userData["id"]!!.jsonPrimitive.content,
+            userData["username"]!!.jsonPrimitive.content,
+            userData["discriminator"]!!.jsonPrimitive.content
+        ))
+    }
+
+    private fun parseRole(resolved: JsonElement): DiscordRoleType {
+        val roleJson = resolved.jsonObject["roles"]!!.jsonObject
+        val roleData = roleJson[roleJson.keys.first()]!!.jsonObject
+
+        return DiscordRoleType(DiscordRole(
+            roleData["id"]!!.jsonPrimitive.content,
+            roleData["name"]!!.jsonPrimitive.content,
+            roleData["color"]!!.jsonPrimitive.int,
+            roleData["hoist"]!!.jsonPrimitive.boolean,
+            roleData["icon"]!!.jsonPrimitive.contentOrNull,
+            roleData["unicode_emoji"]!!.jsonPrimitive.contentOrNull,
+            roleData["position"]!!.jsonPrimitive.int,
+            roleData["permissions"]!!.jsonPrimitive.content,
+            roleData["managed"]!!.jsonPrimitive.boolean,
+            roleData["mentionable"]!!.jsonPrimitive.boolean,
+            DiscordRoleTag(
+                roleData["tags"]?.jsonObject?.get("bot_id")?.jsonPrimitive?.content,
+                roleData["tags"]?.jsonObject?.get("integration_id")?.jsonPrimitive?.content
+            )
+        ))
     }
 }
