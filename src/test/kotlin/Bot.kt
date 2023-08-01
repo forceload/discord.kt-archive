@@ -44,6 +44,15 @@ class TestBot: DiscordClient() {
                 )) {
                     this.context.interaction.reply(this.args["role"], MessageFlag.EPHEMERAL)
                 }
+
+                command("channel_test", args = mapOf(
+                    "role" to CommandArgument(
+                        CommandArgumentType.MENTIONABLE,
+                        description = "Role"
+                    )
+                )) {
+                    this.context.interaction.reply(this.args["role"], MessageFlag.EPHEMERAL)
+                }
             }
         }
 
