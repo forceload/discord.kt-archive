@@ -1,34 +1,64 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
-    kotlin("jvm") version "1.9.0"
-    kotlin("plugin.serialization") version "1.9.0"
-    id("io.gitlab.arturbosch.detekt").version("1.22.0-RC1")
+    kotlin("multiplatform") version "1.9.0"
 }
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-    }
-}
-
-
-dependencies {
-    implementation(kotlin("stdlib"))
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.10")
-}
+group = "io.github.forceload"
+version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
 }
 
-val compileKotlin: KotlinCompile by tasks
-compileKotlin.kotlinOptions {
-    jvmTarget = "17"
-}
-val compileTestKotlin: KotlinCompile by tasks
-compileTestKotlin.kotlinOptions {
-    jvmTarget = "17"
+kotlin {
+    jvm {
+        compilations.all {
+            kotlinOptions.jvmTarget = "17"
+        }
+        withJava()
+        testRuns["test"].executionTask.configure {
+            useJUnitPlatform()
+        }
+    }
+
+    js(BOTH) {
+        browser {
+            commonWebpackConfig {
+                cssSupport {
+                    enabled.set(true)
+                }
+            }
+        }
+    }
+
+    val hostOs = System.getProperty("os.name")
+    val isMingwX64 = hostOs.startsWith("Windows")
+    val nativeTarget = when {
+        hostOs == "Mac OS X" -> macosX64("native")
+        hostOs == "Linux" -> linuxX64("native")
+        isMingwX64 -> mingwX64("native")
+        else -> throw GradleException("Host OS is not supported in Kotlin/Native.")
+    }
+
+    
+    sourceSets {
+        val ktor_version: String by project
+
+        val commonMain by getting {
+            dependencies {
+                implementation("io.ktor:ktor-client-core:$ktor_version")
+            }
+        }
+
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
+        val jvmMain by getting
+        val jvmTest by getting
+        val jsMain by getting
+        val jsTest by getting
+        val nativeMain by getting
+        val nativeTest by getting
+    }
 }
