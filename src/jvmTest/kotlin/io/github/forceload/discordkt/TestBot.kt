@@ -1,21 +1,22 @@
 package io.github.forceload.discordkt
 
-import io.github.forceload.discordkt.util.EnvUtil
 import kotlin.test.Test
 
 class TestBot {
     @Test
     fun runTest() {
         bot {
-            id = EnvUtil.getEnv("ID").toLong()
+            id = System.getenv("DISCORD_KT_TEST_USERID")
+            token = System.getenv("DISCORD_KT_TEST_TOKEN")
 
             command("ping") {
                 arguments("hello" to Int)
+                description = "Just Ping"
 
                 execute {
-                    arguments["hello"]
+                    println(arguments["hello"])
                 }
             }
-        }
+        }.run()
     }
 }
