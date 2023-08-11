@@ -5,7 +5,7 @@ import io.github.forceload.discordkt.exception.InvalidArgumentTypeException
 import io.github.forceload.discordkt.type.DiscordInteger
 import io.github.forceload.discordkt.type.DiscordString
 
-class DiscordCommand {
+class CommandNode {
     var description: String = ""
     private var code = ArrayList<CommandContext.() -> Unit>()
 

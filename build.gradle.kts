@@ -20,7 +20,7 @@ kotlin {
         }
     }
 
-    js(BOTH) {
+    /*js(BOTH) {
         browser {
             commonWebpackConfig {
                 cssSupport {
@@ -28,7 +28,7 @@ kotlin {
                 }
             }
         }
-    }
+    }*/
 
     val hostOs = System.getProperty("os.name")
     val isMingwX64 = hostOs.startsWith("Windows")
@@ -46,18 +46,23 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation("io.ktor:ktor-client-core:$ktor_version")
+                implementation("io.ktor:ktor-client-cio:$ktor_version")
+
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
             }
         }
 
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
+                // implementation("org.jetbrains.kotlinx:kotlinx-io-core:0.2.1")
             }
         }
+
         val jvmMain by getting
         val jvmTest by getting
-        val jsMain by getting
-        val jsTest by getting
+        // val jsMain by getting
+        // val jsTest by getting
         val nativeMain by getting
         val nativeTest by getting
     }
