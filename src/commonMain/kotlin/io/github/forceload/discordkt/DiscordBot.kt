@@ -11,12 +11,12 @@ fun bot(debug: Boolean = false, application: DiscordBot.() -> Unit): DiscordBot 
     return bot
 }
 
-class DiscordBot(val debug: Boolean) {
+class DiscordBot(debug: Boolean) {
     lateinit var id: String
     lateinit var token: String
 
     init {
-        DebugLogger.enabled = !debug
+        DebugLogger.enabled = debug
     }
 
     private val commandMap = HashMap<String, CommandNode>()
