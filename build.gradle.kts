@@ -1,5 +1,6 @@
 plugins {
     kotlin("multiplatform") version "1.9.0"
+    kotlin("plugin.serialization") version "1.9.0"
 }
 
 group = "io.github.forceload"
@@ -49,6 +50,7 @@ kotlin {
                 implementation("io.ktor:ktor-client-cio:$ktor_version")
 
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0-RC")
             }
         }
 
