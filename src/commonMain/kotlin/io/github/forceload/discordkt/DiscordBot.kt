@@ -32,9 +32,7 @@ class DiscordBot(debug: Boolean) {
     }
 
     fun run() {
-        RequestUtil.authorization = token
-
-        val commands = RequestUtil.get("applications/${id}/commands")
+        val commands = RequestUtil.get("applications/${id}/commands", token)
         DebugLogger.log(commands)
     }
 }

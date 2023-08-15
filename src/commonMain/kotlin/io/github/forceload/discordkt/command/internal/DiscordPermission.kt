@@ -48,6 +48,5 @@ enum class DiscordPermission(val id: Long) {
     VIEW_CREATOR_MONETIZATION_ANALYTICS(1 shl 41),
     USE_SOUNDBOARD(1 shl 42),
     USE_EXTERNAL_SOUNDS(1 shl 45),
-    SEND_VOICE_MESSAGES(1 shl 46)
-
+    SEND_VOICE_MESSAGES(1 shl 46);
 }
