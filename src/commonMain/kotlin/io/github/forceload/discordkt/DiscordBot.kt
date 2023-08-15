@@ -5,11 +5,8 @@ import io.github.forceload.discordkt.exception.CommandAlreadyExistsException
 import io.github.forceload.discordkt.network.RequestUtil
 import io.github.forceload.discordkt.util.DebugLogger
 
-fun bot(debug: Boolean = false, application: DiscordBot.() -> Unit): DiscordBot {
-    val bot = DiscordBot(debug)
-    bot.application()
-    return bot
-}
+fun bot(debug: Boolean = false, application: DiscordBot.() -> Unit) =
+    DiscordBot(debug).also(application)
 
 class DiscordBot(debug: Boolean) {
     lateinit var id: String
