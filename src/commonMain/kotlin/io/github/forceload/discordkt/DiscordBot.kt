@@ -2,21 +2,23 @@ package io.github.forceload.discordkt
 
 import io.github.forceload.discordkt.command.CommandNode
 import io.github.forceload.discordkt.exception.CommandAlreadyExistsException
-import io.github.forceload.discordkt.network.RequestUtil
 import io.github.forceload.discordkt.util.DebugLogger
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
 
-fun bot(debug: Boolean = false, application: DiscordBot.() -> Unit) =
-    DiscordBot(debug).also(application)
+fun bot(
+    credentials: DiscordBotCredentials,
+    debug: Boolean = false, application: DiscordBot.() -> Unit
+) = DiscordBot(credentials, debug).also(application)
 
-class DiscordBot(debug: Boolean) {
-    lateinit var id: String
-    lateinit var token: String
+class DiscordBot(val credentials: DiscordBotCredentials, debug: Boolean) {
+    val client = HttpClient(CIO)
+    private val commandMap = HashMap<String, CommandNode>()
 
     init {
         DebugLogger.enabled = debug
     }
 
-    private val commandMap = HashMap<String, CommandNode>()
     fun command(name: String, code: CommandNode.() -> Unit) {
         val commandNode = CommandNode()
         commandNode.code()
@@ -28,10 +30,8 @@ class DiscordBot(debug: Boolean) {
         commandMap[name] = commandNode
     }
 
-    fun run() {
-        RequestUtil.authorization = token
-
-        val commands = RequestUtil.get("applications/${id}/commands")
+    suspend fun run() {
+        val commands = get("applications/${credentials.id}/commands")
         DebugLogger.log(commands)
     }
 }
