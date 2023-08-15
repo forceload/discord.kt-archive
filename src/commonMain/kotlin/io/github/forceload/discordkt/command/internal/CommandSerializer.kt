@@ -30,7 +30,7 @@ object CommandSerializer: KSerializer<DiscordCommand> {
         }
 
     override fun deserialize(decoder: Decoder): DiscordCommand {
-        TODO("귀찮음")
+        TODO("어...")
     }
 
     override fun serialize(encoder: Encoder, value: DiscordCommand) {

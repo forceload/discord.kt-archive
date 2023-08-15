@@ -9,9 +9,8 @@ import kotlinx.coroutines.runBlocking
 
 object RequestUtil {
     val client = HttpClient(CIO)
-    lateinit var authorization: String
 
-    fun get(url: String) =
+    fun get(url: String, authorization: String) =
         runBlocking {
             client.get {
                 url {
