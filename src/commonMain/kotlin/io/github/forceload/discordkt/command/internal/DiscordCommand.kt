@@ -16,10 +16,11 @@ import kotlinx.serialization.encoding.Encoder
  */
 @Serializable(with = CommandSerializer::class)
 data class DiscordCommand(
-    val id: String, val appId: String,
+    val id: String? = null, val appID: String? = null,
     val name: String, val description: String, val version: String
 ) {
-    var type = ApplicationCommandType.CHAT_INPUT
+    var type: ApplicationCommandType?
+        = ApplicationCommandType.CHAT_INPUT
 
     var guildID: String? = null
     val nameLocalizations = HashMap<DiscordLocale, String>()
@@ -100,18 +101,18 @@ data class DiscordCommand(
             result = 31 * result + autoComplete.hashCode()
             return result
         }
-    }
 
-    object CommandOptionSerializer: KSerializer<ApplicationCommandOption> {
-        override val descriptor: SerialDescriptor
-            get() = TODO("Not yet implemented")
+        object Serializer: KSerializer<ApplicationCommandOption> {
+            override val descriptor: SerialDescriptor
+                get() = TODO("Not yet implemented")
 
-        override fun deserialize(decoder: Decoder): ApplicationCommandOption {
-            TODO("Not yet implemented")
-        }
+            override fun deserialize(decoder: Decoder): ApplicationCommandOption {
+                TODO("Not yet implemented")
+            }
 
-        override fun serialize(encoder: Encoder, value: ApplicationCommandOption) {
-            TODO("Not yet implemented")
+            override fun serialize(encoder: Encoder, value: ApplicationCommandOption) {
+                TODO("Not yet implemented")
+            }
         }
     }
 
