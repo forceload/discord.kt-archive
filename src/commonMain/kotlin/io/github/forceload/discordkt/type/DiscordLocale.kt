@@ -1,10 +1,22 @@
 package io.github.forceload.discordkt.type
 
+import io.github.forceload.discordkt.command.internal.type.ApplicationCommandOptionType
+import io.github.forceload.discordkt.command.internal.type.ApplicationCommandType
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+
 /**
  * https://discord.com/developers/docs/reference#locales
  */
+
 @Suppress("EnumEntryName")
-enum class DiscordLocale(localeID: String, name: String) {
+@Serializable(with = DiscordLocale.Serializer::class)
+enum class DiscordLocale(val localeID: String, name: String) {
     id_ID("id", "Indonesian"),
     da_DK("da", "Danish"),
     de_DE("de", "German"),
@@ -35,5 +47,20 @@ enum class DiscordLocale(localeID: String, name: String) {
     zh_CN("zh-CN", "Chinese (China)"),
     ja_JP("ja", "Japanese"),
     zh_TW("zh-TW", "Chinese (Taiwan)"),
-    ko_KR("ko", "Korean")
+    ko_KR("ko", "Korean");
+
+    companion object {
+        fun fromID(id: String) = entries.first { it.localeID == id }
+    }
+
+    object Serializer: KSerializer<DiscordLocale> {
+        override val descriptor: SerialDescriptor
+            = PrimitiveSerialDescriptor("ApplicationCommandType", PrimitiveKind.STRING)
+
+        override fun deserialize(decoder: Decoder) =
+            DiscordLocale.fromID(decoder.decodeString())
+
+        override fun serialize(encoder: Encoder, value: DiscordLocale) =
+            encoder.encodeString(value.localeID)
+    }
 }
