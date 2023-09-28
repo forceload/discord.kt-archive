@@ -328,7 +328,7 @@ data class DiscordCommand(
         if (options != other.options) return false
         if (defaultMemberPermissions != other.defaultMemberPermissions) return false
         if (dmPermission != other.dmPermission) return false
-        if (defaultPermission != other.defaultPermission) return false
+        // if (defaultPermission != other.defaultPermission) return false
         return nsfw == other.nsfw
     }
 
@@ -342,7 +342,7 @@ data class DiscordCommand(
         result = 31 * result + options.hashCode()
         result = 31 * result + defaultMemberPermissions.hashCode()
         result = 31 * result + dmPermission.hashCode()
-        result = 31 * result + defaultPermission.hashCode()
+        // result = 31 * result + defaultPermission.hashCode()
         result = 31 * result + nsfw.hashCode()
         return result
     }

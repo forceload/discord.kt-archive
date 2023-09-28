@@ -27,9 +27,9 @@ object RequestUtil {
             }.body<String>()
         }
 
-    fun delete(url: String, authorization: String) =
+    fun post(url: String, authorization: String, data: String, type: ContentType = ContentType.Application.Json) =
         runBlocking {
-            client.delete {
+            client.post {
                 url {
                     protocol = URLProtocol.HTTPS
                     host = "discord.com"
@@ -41,6 +41,27 @@ object RequestUtil {
                 headers {
                     append("Authorization", "Bot $authorization")
                 }
+
+                contentType(type)
+                setBody(data)
             }.body<String>()
+        }
+
+    fun delete(url: String, authorization: String) =
+        runBlocking {
+            println(url)
+            /*client.delete {
+                url {
+                    protocol = URLProtocol.HTTPS
+                    host = "discord.com"
+
+                    appendPathSegments("api", "v10")
+                    appendPathSegments(url)
+                }
+
+                headers {
+                    append("Authorization", "Bot $authorization")
+                }
+            }.body<String>()*/
         }
 }
