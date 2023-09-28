@@ -1,6 +1,7 @@
 package io.github.forceload.discordkt.command.internal
 
 import io.github.forceload.discordkt.command.internal.type.ApplicationCommandOptionType
+import io.github.forceload.discordkt.command.internal.type.ValueType.StringType.Companion.convert
 import io.github.forceload.discordkt.type.DiscordLocale
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -17,10 +18,10 @@ class CommandHashTest {
         option1.descriptionLocalizations[DiscordLocale.ko_KR] = "DM을 전송할 메시지입니다"
 
         val helloOption1 =
-            DiscordCommand.ApplicationCommandOption.ApplicationCommandOptionChoice("Hello", "Hi")
+            DiscordCommand.ApplicationCommandOption.ApplicationCommandOptionChoice("Hello", "Hi".convert())
         helloOption1.nameLocalizations[DiscordLocale.ko_KR] = "인사 메시지"
         val helloOption2 =
-            DiscordCommand.ApplicationCommandOption.ApplicationCommandOptionChoice("WTF", "WTF")
+            DiscordCommand.ApplicationCommandOption.ApplicationCommandOptionChoice("WTF", "WTF".convert())
         helloOption2.nameLocalizations[DiscordLocale.ko_KR] = "놀람"
 
         option1.choices.add(helloOption1)

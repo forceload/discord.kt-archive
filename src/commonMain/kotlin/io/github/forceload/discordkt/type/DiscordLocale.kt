@@ -1,9 +1,9 @@
 package io.github.forceload.discordkt.type
 
-import io.github.forceload.discordkt.command.internal.type.ApplicationCommandOptionType
-import io.github.forceload.discordkt.command.internal.type.ApplicationCommandType
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -51,11 +51,12 @@ enum class DiscordLocale(val localeID: String, name: String) {
 
     companion object {
         fun fromID(id: String) = entries.first { it.localeID == id }
+        val localizationSerializer = MapSerializer(Serializer, String.serializer())
     }
 
     object Serializer: KSerializer<DiscordLocale> {
-        override val descriptor: SerialDescriptor
-            = PrimitiveSerialDescriptor("ApplicationCommandType", PrimitiveKind.STRING)
+        override val descriptor: SerialDescriptor =
+            PrimitiveSerialDescriptor("ApplicationCommandType", PrimitiveKind.STRING)
 
         override fun deserialize(decoder: Decoder) =
             DiscordLocale.fromID(decoder.decodeString())
