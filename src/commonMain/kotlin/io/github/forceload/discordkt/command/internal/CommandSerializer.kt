@@ -2,10 +2,8 @@ package io.github.forceload.discordkt.command.internal
 
 import io.github.forceload.discordkt.command.internal.type.ApplicationCommandType
 import io.github.forceload.discordkt.type.DiscordLocale
+import io.github.forceload.discordkt.util.SerializerExtension.listSerializer
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.builtins.MapSerializer
-import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
 import kotlinx.serialization.descriptors.element
@@ -44,22 +42,16 @@ object CommandSerializer: KSerializer<DiscordCommand> {
 
             encodeStringElement(descriptor, 4, value.name)
             if (value.nameLocalizations.isNotEmpty()) encodeSerializableElement(
-                descriptor, 5, MapSerializer(
-                    DiscordLocale.Serializer, String.serializer()
-                ), value.nameLocalizations
+                descriptor, 5, DiscordLocale.localizationSerializer, value.nameLocalizations
             )
 
             encodeStringElement(descriptor, 6, value.description)
             if (value.descriptionLocalizations.isNotEmpty()) encodeSerializableElement(
-                descriptor, 7, MapSerializer(
-                    DiscordLocale.Serializer, String.serializer()
-                ), value.descriptionLocalizations
+                descriptor, 7, DiscordLocale.localizationSerializer, value.descriptionLocalizations
             )
 
             if (value.options.isNotEmpty()) encodeSerializableElement(
-                descriptor, 8, ListSerializer(
-                    DiscordCommand.ApplicationCommandOption.Serializer
-                ), value.options
+                descriptor, 8, DiscordCommand.ApplicationCommandOption.Serializer.listSerializer(), value.options
             )
 
             TODO("추가 Encoding 작업")
