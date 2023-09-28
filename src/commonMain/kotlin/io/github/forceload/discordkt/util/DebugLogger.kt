@@ -6,7 +6,7 @@ import kotlinx.datetime.toLocalDateTime
 
 object DebugLogger {
 
-    val timestampMessage: String
+    private val timestampMessage: String
         get() {
             val now = Clock.System.now()
             val currentTime = now.toLocalDateTime(TimeZone.currentSystemDefault())

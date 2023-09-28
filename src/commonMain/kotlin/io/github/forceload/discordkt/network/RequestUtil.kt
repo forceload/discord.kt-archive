@@ -8,11 +8,28 @@ import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
 
 object RequestUtil {
-    val client = HttpClient(CIO)
+    private val client = HttpClient(CIO)
 
     fun get(url: String, authorization: String) =
         runBlocking {
             client.get {
+                url {
+                    protocol = URLProtocol.HTTPS
+                    host = "discord.com"
+
+                    appendPathSegments("api", "v10")
+                    appendPathSegments(url)
+                }
+
+                headers {
+                    append("Authorization", "Bot $authorization")
+                }
+            }.body<String>()
+        }
+
+    fun delete(url: String, authorization: String) =
+        runBlocking {
+            client.delete {
                 url {
                     protocol = URLProtocol.HTTPS
                     host = "discord.com"

@@ -17,6 +17,6 @@ class TestBot {
                     println(arguments["hello"])
                 }
             }
-        }.run()
+        }.run(commandOptionMaxDepth = 16)
     }
 }

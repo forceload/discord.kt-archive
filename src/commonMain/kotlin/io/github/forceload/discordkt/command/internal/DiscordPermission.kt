@@ -1,5 +1,12 @@
 package io.github.forceload.discordkt.command.internal
 
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+
 /**
  * https://discord.com/developers/docs/topics/permissions#permissions-bitwise-permission-flags
  */
@@ -50,4 +57,28 @@ enum class DiscordPermission(val id: Long) {
     USE_SOUNDBOARD(1L shl 42),
     USE_EXTERNAL_SOUNDS(1L shl 45),
     SEND_VOICE_MESSAGES(1L shl 46);
+
+    object SetSerializer: KSerializer<Set<DiscordPermission>> {
+        override val descriptor: SerialDescriptor =
+            PrimitiveSerialDescriptor("DiscordPermission", PrimitiveKind.STRING)
+
+        override fun deserialize(decoder: Decoder): Set<DiscordPermission> {
+            val permString = decoder.decodeString()
+            val permission = permString.toLong()
+
+            val permissionSet = mutableSetOf<DiscordPermission>()
+            DiscordPermission.entries.forEach {
+                if (permission and it.id == it.id) permissionSet.add(it)
+            }
+
+            return permissionSet
+        }
+
+        override fun serialize(encoder: Encoder, value: Set<DiscordPermission>) {
+            var result = 0L
+            value.forEach { result = result or it.id }
+
+            encoder.encodeString(result.toString())
+        }
+    }
 }
