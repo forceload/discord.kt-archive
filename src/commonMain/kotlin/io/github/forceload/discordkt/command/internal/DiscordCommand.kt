@@ -4,9 +4,12 @@ import io.github.forceload.discordkt.channel.DiscordChannelType
 import io.github.forceload.discordkt.command.internal.type.ApplicationCommandOptionType
 import io.github.forceload.discordkt.command.internal.type.ApplicationCommandType
 import io.github.forceload.discordkt.command.internal.type.ValueType
+import io.github.forceload.discordkt.network.RequestUtil
 import io.github.forceload.discordkt.type.DiscordLocale
+import io.github.forceload.discordkt.util.DebugLogger
 import io.github.forceload.discordkt.util.SerializerExtension.encodeNumberElement
 import io.github.forceload.discordkt.util.SerializerExtension.listSerializer
+import io.github.forceload.discordkt.util.SerializerUtil
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
@@ -21,10 +24,11 @@ import kotlinx.serialization.encoding.Encoder
 /**
  * https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-structure
  */
+@Suppress("DEPRECATION")
 @Serializable(with = CommandSerializer::class)
 data class DiscordCommand(
     val id: String? = null, val appID: String? = null,
-    val name: String, val description: String, val version: String
+    val name: String, val description: String, val version: String? = null
 ) {
     var type: ApplicationCommandType?
         = ApplicationCommandType.CHAT_INPUT
@@ -36,11 +40,12 @@ data class DiscordCommand(
     /**
      * https://discord.com/developers/docs/interactions/application-commands#application-command-object-application-command-option-structure
      */
-    data class ApplicationCommandOption(
+    @Serializable(with = ApplicationCommandOption.Serializer::class)
+    class ApplicationCommandOption(
         val type: ApplicationCommandOptionType,
         val name: String, val description: String, val required: Boolean = false
     ) {
-        @Serializable
+        @Serializable(with = ApplicationCommandOptionChoice.Serializer::class)
         class ApplicationCommandOptionChoice(
             val name: String, val value: ValueType
         ) {
@@ -88,6 +93,10 @@ data class DiscordCommand(
                         endStructure(descriptor)
                     }
                 }
+            }
+
+            override fun toString(): String {
+                return "ApplicationCommandOptionChoice(name='$name', value=$value, nameLocalizations=$nameLocalizations)"
             }
         }
 
@@ -157,20 +166,30 @@ data class DiscordCommand(
             return autoComplete == other.autoComplete
         }
 
+        override fun toString(): String {
+            return "ApplicationCommandOption(type=$type, name='$name', description='$description', required=$required, nameLocalizations=$nameLocalizations, descriptionLocalizations=$descriptionLocalizations, choices=$choices, options=$options, channelTypes=$channelTypes, minValue=$minValue, maxValue=$maxValue, minLength=$minLength, maxLength=$maxLength, autoComplete=$autoComplete)"
+        }
+
         object Serializer: KSerializer<ApplicationCommandOption> {
-            override val descriptor: SerialDescriptor =
-                buildClassSerialDescriptor("ApplicationCommandOption") {
+            private var descriptorDepth = 0
+
+            override val descriptor: SerialDescriptor
+                get() = buildClassSerialDescriptor("ApplicationCommandOption") {
                     element<ApplicationCommandOptionType>("type")
                     element<String>("name")
                     element<HashMap<DiscordLocale, String>?>("name_localizations", isOptional = true)
                     element<String>("description")
                     element<HashMap<DiscordLocale, String>?>("description_localizations", isOptional = true)
                     element<Boolean>("required", isOptional = true)
-                    element<ArrayList<ApplicationCommandOptionChoice>>("choices", isOptional = true)
-                    element<ArrayList<ApplicationCommandOption>>("options", isOptional = true)
-                    element<ArrayList<DiscordChannelType>>("channel_types", isOptional = true)
-                    element<Number>("min_value", isOptional = true)
-                    element<Number>("max_value", isOptional = true)
+                    element<List<ApplicationCommandOptionChoice>>("choices", isOptional = true)
+                    if (descriptorDepth <= SerializerUtil.commandOptionMaxDepth) {
+                        descriptorDepth++
+                        element<List<ApplicationCommandOption>>("options", isOptional = true)
+                    }
+
+                    element<List<DiscordChannelType>>("channel_types", isOptional = true)
+                    element<ValueType>("min_value", isOptional = true)
+                    element<ValueType>("max_value", isOptional = true)
                     element<Int>("min_length", isOptional = true)
                     element<Int>("max_length", isOptional = true)
                     element<Boolean>("autocomplete", isOptional = true)
@@ -197,43 +216,36 @@ data class DiscordCommand(
                 var maxLength: Int? = null
                 var autoComplete: Boolean? = null
 
-                decoder.beginStructure(descriptor).run {
+                descriptorDepth = 0
+                val descriptorCopy = descriptor
+                decoder.beginStructure(descriptorCopy).run {
                     loop@ while (true) {
-                        when (val i = decodeElementIndex(descriptor)) {
+                        when (val i = decodeElementIndex(descriptorCopy)) {
                             CompositeDecoder.DECODE_DONE -> break@loop
-                            0 -> type = decodeSerializableElement(descriptor, i, ApplicationCommandOptionType.Serializer)
+                            0 -> type = decodeSerializableElement(descriptorCopy, i, ApplicationCommandOptionType.Serializer)
 
-                            1 -> name = decodeStringElement(descriptor, i)
-                            2 -> nameLocalizations = decodeSerializableElement(descriptor, i, DiscordLocale.localizationSerializer) as HashMap
+                            1 -> name = decodeStringElement(descriptorCopy, i)
+                            2 -> nameLocalizations = decodeSerializableElement(descriptorCopy, i, DiscordLocale.localizationSerializer) as HashMap
 
-                            3 -> description = decodeStringElement(descriptor, i)
-                            4 -> descriptionLocalizations = decodeSerializableElement(descriptor, i, DiscordLocale.localizationSerializer) as HashMap
+                            3 -> description = decodeStringElement(descriptorCopy, i)
+                            4 -> descriptionLocalizations = decodeSerializableElement(descriptorCopy, i, DiscordLocale.localizationSerializer) as HashMap
 
-                            5 -> required = decodeBooleanElement(descriptor, i)
-                            6 -> choices = decodeSerializableElement(descriptor, i, ApplicationCommandOptionChoice.Serializer.listSerializer()) as ArrayList
-                            7 -> options = decodeSerializableElement(descriptor, i, Serializer.listSerializer()) as ArrayList
-                            8 -> channelTypes = decodeSerializableElement(descriptor, i, DiscordChannelType.Serializer.listSerializer()) as ArrayList
+                            5 -> required = decodeBooleanElement(descriptorCopy, i)
+                            6 -> choices = ArrayList(decodeSerializableElement(descriptorCopy, i, ApplicationCommandOptionChoice.Serializer.listSerializer()))
+                            7 -> options = ArrayList(decodeSerializableElement(descriptorCopy, i, Serializer.listSerializer()))
+                            8 -> channelTypes = ArrayList(decodeSerializableElement(descriptorCopy, i, DiscordChannelType.Serializer.listSerializer()))
 
-                            9 -> minValue = when (type) {
-                                ApplicationCommandOptionType.INTEGER -> decodeIntElement(descriptor, i)
-                                ApplicationCommandOptionType.NUMBER -> decodeDoubleElement(descriptor, i)
-                                else -> throw SerializationException("Unknown type for `min_value` field")
-                            }
+                            9 -> minValue = decodeSerializableElement(descriptorCopy, i, ValueType.Serializer).value as Number
+                            10 -> maxValue = decodeSerializableElement(descriptorCopy, i, ValueType.Serializer).value as Number
 
-                            10 -> maxValue = when (type) {
-                                ApplicationCommandOptionType.INTEGER -> decodeIntElement(descriptor, i)
-                                ApplicationCommandOptionType.NUMBER -> decodeDoubleElement(descriptor, i)
-                                else -> throw SerializationException("Unknown type for `max_value` field")
-                            }
-
-                            11 -> minLength = decodeIntElement(descriptor, i)
-                            12 -> maxLength = decodeIntElement(descriptor, i)
-                            13 -> autoComplete = decodeBooleanElement(descriptor, i)
+                            11 -> minLength = decodeIntElement(descriptorCopy, i)
+                            12 -> maxLength = decodeIntElement(descriptorCopy, i)
+                            13 -> autoComplete = decodeBooleanElement(descriptorCopy, i)
                             else -> throw SerializationException("Unknown Index $i")
                         }
                     }
 
-                    endStructure(descriptor)
+                    endStructure(descriptorCopy)
                 }
 
                 val result = ApplicationCommandOption(type!!, name!!, description!!, required)
@@ -255,38 +267,40 @@ data class DiscordCommand(
             }
 
             override fun serialize(encoder: Encoder, value: ApplicationCommandOption) {
-                encoder.beginStructure(descriptor).run {
-                    encodeSerializableElement(descriptor, 0, ApplicationCommandOptionType.Serializer, value.type)
+                descriptorDepth = 0
+                val descriptorCopy = descriptor
+                encoder.beginStructure(descriptorCopy).run {
+                    encodeSerializableElement(descriptorCopy, 0, ApplicationCommandOptionType.Serializer, value.type)
 
-                    encodeStringElement(descriptor, 1, value.name)
+                    encodeStringElement(descriptorCopy, 1, value.name)
                     if (value.nameLocalizations.isNotEmpty()) encodeSerializableElement(
-                        descriptor, 2, DiscordLocale.localizationSerializer, value.nameLocalizations
+                        descriptorCopy, 2, DiscordLocale.localizationSerializer, value.nameLocalizations
                     )
 
-                    encodeStringElement(CommandSerializer.descriptor, 3, value.description)
+                    encodeStringElement(descriptorCopy, 3, value.description)
                     if (value.descriptionLocalizations.isNotEmpty()) encodeSerializableElement(
-                        descriptor, 4, DiscordLocale.localizationSerializer, value.descriptionLocalizations
+                        descriptorCopy, 4, DiscordLocale.localizationSerializer, value.descriptionLocalizations
                     )
 
-                    encodeBooleanElement(descriptor, 5, value.required)
+                    encodeBooleanElement(descriptorCopy, 5, value.required)
                     if (value.choices.isNotEmpty()) encodeSerializableElement(
-                        descriptor, 6, ApplicationCommandOptionChoice.Serializer.listSerializer(), value.choices
+                        descriptorCopy, 6, ApplicationCommandOptionChoice.Serializer.listSerializer(), value.choices
                     )
 
                     if (value.options.isNotEmpty())
-                        encodeSerializableElement(descriptor, 7, Serializer.listSerializer(), value.options)
+                        encodeSerializableElement(descriptorCopy, 7, Serializer.listSerializer(), value.options)
 
                     if (value.channelTypes.isNotEmpty()) encodeSerializableElement(
-                        descriptor, 8, DiscordChannelType.Serializer.listSerializer(), value.channelTypes
+                        descriptorCopy, 8, DiscordChannelType.Serializer.listSerializer(), value.channelTypes
                     )
 
-                    value.minValue?.let { encodeNumberElement(descriptor, 9, value.minValue!!) }
-                    value.maxValue?.let { encodeNumberElement(descriptor, 10, value.maxValue!!) }
-                    if (value.minLength >= 0) encodeIntElement(descriptor, 11, value.minLength)
-                    if (value.maxLength >= 0) encodeIntElement(descriptor, 12, value.maxLength)
-                    value.autoComplete?.let { encodeBooleanElement(descriptor, 13, value.autoComplete!!) }
+                    value.minValue?.let { encodeNumberElement(descriptorCopy, 9, value.minValue!!) }
+                    value.maxValue?.let { encodeNumberElement(descriptorCopy, 10, value.maxValue!!) }
+                    if (value.minLength >= 0) encodeIntElement(descriptorCopy, 11, value.minLength)
+                    if (value.maxLength >= 0) encodeIntElement(descriptorCopy, 12, value.maxLength)
+                    value.autoComplete?.let { encodeBooleanElement(descriptorCopy, 13, value.autoComplete!!) }
 
-                    endStructure(descriptor)
+                    endStructure(descriptorCopy)
                 }
             }
         }
@@ -296,7 +310,8 @@ data class DiscordCommand(
     var defaultMemberPermissions = mutableSetOf<DiscordPermission>()
     var dmPermission: Boolean = true
 
-    var defaultPermission: Boolean = true // Will be Deprecated
+    @Deprecated("Not recommended for use as field will soon be deprecated", level = DeprecationLevel.WARNING)
+    var defaultPermission: Boolean? = null
     var nsfw: Boolean = false
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -330,5 +345,18 @@ data class DiscordCommand(
         result = 31 * result + defaultPermission.hashCode()
         result = 31 * result + nsfw.hashCode()
         return result
+    }
+
+    override fun toString(): String {
+        return "DiscordCommand(id=$id, appID=$appID, name='$name', description='$description', version=$version, type=$type, guildID=$guildID, nameLocalizations=$nameLocalizations, descriptionLocalizations=$descriptionLocalizations, options=$options, defaultMemberPermissions=$defaultMemberPermissions, dmPermission=$dmPermission, defaultPermission=$defaultPermission, nsfw=$nsfw)"
+    }
+
+    fun destroy(token: String): Boolean {
+        var url = "applications/$appID/"
+        url += if (guildID != null) "guilds/$guildID/commands/$id"
+        else "commands/$id"
+
+        DebugLogger.log(RequestUtil.delete(url, token))
+        return true
     }
 }

@@ -1,9 +1,11 @@
 package io.github.forceload.discordkt
 
 import io.github.forceload.discordkt.command.CommandNode
+import io.github.forceload.discordkt.command.internal.DiscordCommand
 import io.github.forceload.discordkt.exception.CommandAlreadyExistsException
 import io.github.forceload.discordkt.network.RequestUtil
 import io.github.forceload.discordkt.util.DebugLogger
+import io.github.forceload.discordkt.util.SerializerUtil
 
 fun bot(debug: Boolean = false, application: DiscordBot.() -> Unit): DiscordBot {
     val bot = DiscordBot(debug)
@@ -31,8 +33,11 @@ class DiscordBot(debug: Boolean) {
         commandMap[name] = commandNode
     }
 
-    fun run() {
+    fun run(commandOptionMaxDepth: Int = 16) {
         val commands = RequestUtil.get("applications/${id}/commands", token)
-        DebugLogger.log(commands)
+        SerializerUtil.commandOptionMaxDepth = commandOptionMaxDepth
+
+        val commandList = SerializerUtil.jsonBuild.decodeFromString<ArrayList<DiscordCommand>>(commands)
+        DebugLogger.log(commandList)
     }
 }

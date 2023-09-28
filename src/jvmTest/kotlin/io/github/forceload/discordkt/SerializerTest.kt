@@ -2,13 +2,12 @@ package io.github.forceload.discordkt
 
 import io.github.forceload.discordkt.command.internal.type.ValueType
 import io.github.forceload.discordkt.command.internal.type.ValueType.IntType.Companion.convert
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
+import io.github.forceload.discordkt.util.SerializerExtension.decodeNull
+import io.github.forceload.discordkt.util.SerializerExtension.encodeNull
+import kotlinx.serialization.*
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
@@ -58,7 +57,55 @@ object JustSerializer: KSerializer<JustClass> {
             endStructure(descriptor)
         }
     }
+}
 
+object ClassNullSerializer: KSerializer<JustClass> {
+    override val descriptor: SerialDescriptor =
+        buildClassSerialDescriptor("JustClass") {
+            element<Int>("a", isOptional = true)
+            element<Int>("b", isOptional = true)
+            element<ValueType?>("just")
+            element<ValueType>("c", isOptional = true)
+        }
+
+    override fun deserialize(decoder: Decoder): JustClass {
+        var a: Int? = null
+        var b: Int? = null
+        var c: ValueType? = null
+
+        decoder.beginStructure(descriptor).run {
+            loop@ while (true) {
+                when (val i = decodeElementIndex(descriptor)) {
+                    CompositeDecoder.DECODE_DONE -> break@loop
+                    0 -> a = decodeIntElement(descriptor, i)
+                    1 -> b = decodeIntElement(descriptor, i)
+                    2 -> decodeNull(descriptor, i)
+                    3 -> c = decodeSerializableElement(descriptor, i, ValueType.Serializer)
+                    else -> throw SerializationException("Unknown Index $i")
+                }
+            }
+
+            endStructure(descriptor)
+        }
+
+        val cls = JustClass()
+        cls.a = a; cls.b = b; cls.c = c
+        return cls
+    }
+
+    override fun serialize(encoder: Encoder, value: JustClass) {
+        encoder.beginStructure(descriptor).run {
+            value.a?.let { encodeIntElement(descriptor, 0, value.a!!) }
+            value.b?.let { encodeIntElement(descriptor, 1, value.b!!) }
+
+            encodeNull(descriptor, 2)
+
+            value.c?.let {
+                encodeSerializableElement(descriptor, 3, ValueType.Serializer, value.c!!)
+            }
+            endStructure(descriptor)
+        }
+    }
 }
 
 @Serializable(with = JustSerializer::class)
@@ -67,6 +114,10 @@ class JustClass {
     var b: Int? = null
 
     var c: ValueType? = null
+
+    override fun toString(): String {
+        return "JustClass(a=$a, b=$b, c=$c)"
+    }
 }
 
 class SerializerTest {
@@ -94,6 +145,11 @@ class SerializerTest {
         parsed = Json.decodeFromString<JustClass>(string)
         assert(string == "{\"a\":-275,\"b\":83,\"c\":30}")
         assert(parsed.c!!.value == 30)
+
+        string = Json.encodeToString(ClassNullSerializer, newClass)
+        assert(string == "{\"a\":-275,\"b\":83,\"just\":null,\"c\":30}")
+        parsed = Json.decodeFromString(ClassNullSerializer, string)
+        assert(parsed.c == ValueType.IntType(30))
     }
 
     @Test
