@@ -13,25 +13,27 @@ class CommandNode(var name: String) {
     var description: String = ""
     private var code = ArrayList<CommandContext.() -> Unit>()
 
-    private val argumentMap = HashMap<String, Pair<String, ArgumentType<*>>>()
-
-    private fun makePair(description: String, type: Any): Pair<String, ArgumentType<*>> {
-        return when (type) {
-            is ArgumentType<*> -> Pair(description, type)
-            is String.Companion -> Pair(description, DiscordString(false))
-            is Int.Companion -> Pair(description, DiscordInteger(false))
-
-            else -> throw InvalidArgumentTypeException(type::class.qualifiedName)
-        }
-    }
+    private val argumentMap = HashMap<String, Pair<Argument, ArgumentType<*>>>()
 
     fun arguments(vararg args: Pair<Any, Any>) {
         for (argument in args) {
-            when (argument.first) {
-                is String -> argumentMap[argument.first as String] = makePair("", argument.second)
-                is Argument -> argumentMap[(argument.first as Argument).name] = makePair((argument.first as Argument).description, argument.second)
+            val newArgument = when (argument.first) {
+                is String -> Argument(argument.first as String, "")
+                is Argument -> argument.first as Argument
+
+                else -> throw InvalidArgumentTypeException(argument.first::class.qualifiedName)
+            }
+
+            argumentMap[newArgument.name] = when (argument.second) {
+                is ArgumentType<*> -> Pair(newArgument, argument.second as ArgumentType<*>)
+                is String.Companion -> Pair(newArgument, DiscordString(false))
+                is Int.Companion -> Pair(newArgument, DiscordInteger(false))
+
+                else -> throw InvalidArgumentTypeException(argument.second::class.qualifiedName)
             }
         }
+
+        DebugLogger.log(argumentMap)
     }
 
     fun execute(reaction: CommandContext.() -> Unit) {
@@ -48,8 +50,13 @@ class CommandNode(var name: String) {
                     is DiscordInteger -> ApplicationCommandOptionType.INTEGER
                     else -> throw InvalidArgumentTypeException("Argument Type is Invalid")
                 },
-                entry.key, argument.first, argument.second.required
+                entry.key, argument.first.description, argument.second.required
             )
+
+            DebugLogger.log(argument)
+            option.nameLocalizations.putAll(argument.first.nameLocalizations)
+            option.descriptionLocalizations.putAll(argument.first.descriptionLocalizations)
+            option.choices.addAll(argument.first.choice)
 
             result.options.add(option)
         }

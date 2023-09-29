@@ -37,6 +37,14 @@ open class ValueType(open val value: Any) {
                 is StringType -> encoder.encodeString(value.value)
                 is DoubleType -> encoder.encodeDouble(value.value)
                 is IntType -> encoder.encodeInt(value.value)
+                else -> {
+                    when (value.value) {
+                        is String -> encoder.encodeString(value.value as String)
+                        is Double -> encoder.encodeDouble(value.value as Double)
+                        is Int -> encoder.encodeInt(value.value as Int)
+                        else -> throw InvalidArgumentTypeException("Invalid ValueType ${value.value::class.qualifiedName}")
+                    }
+                }
             }
         }
     }

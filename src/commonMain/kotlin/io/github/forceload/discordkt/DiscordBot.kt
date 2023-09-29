@@ -5,14 +5,12 @@ import io.github.forceload.discordkt.command.internal.CommandSerializer
 import io.github.forceload.discordkt.command.internal.DiscordCommand
 import io.github.forceload.discordkt.exception.CommandAlreadyExistsException
 import io.github.forceload.discordkt.network.RequestUtil
+import io.github.forceload.discordkt.network.WebSocketUtil
 import io.github.forceload.discordkt.util.DebugLogger
 import io.github.forceload.discordkt.util.SerializerUtil
 
-fun bot(debug: Boolean = false, application: DiscordBot.() -> Unit): DiscordBot {
-    val bot = DiscordBot(debug)
-    bot.application()
-    return bot
-}
+fun bot(debug: Boolean = false, application: DiscordBot.() -> Unit) =
+    DiscordBot(debug).also(application)
 
 class DiscordBot(debug: Boolean) {
     lateinit var id: String
@@ -24,9 +22,7 @@ class DiscordBot(debug: Boolean) {
 
     private val commandMap = HashMap<String, CommandNode>()
     fun command(name: String, code: CommandNode.() -> Unit) {
-        val commandNode = CommandNode(name)
-        commandNode.code()
-
+        val commandNode = CommandNode(name).also(code)
         if (name in commandMap.keys) {
             throw CommandAlreadyExistsException(name)
         }
@@ -55,11 +51,12 @@ class DiscordBot(debug: Boolean) {
                     val serialized = SerializerUtil.jsonBuild.encodeToString(CommandSerializer, generated)
                     val post = RequestUtil.post("applications/$id/commands", token, serialized)
 
-                    DebugLogger.log(generated != command)
-                    DebugLogger.log(generated)
-                    DebugLogger.log(command)
+                    DebugLogger.log(serialized)
+                    DebugLogger.log(post)
                 }
             }
         }
+
+        val webSocketClient = WebSocketUtil.newInstance("")
     }
 }
