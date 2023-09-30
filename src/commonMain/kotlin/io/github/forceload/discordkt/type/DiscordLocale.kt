@@ -13,7 +13,6 @@ import kotlinx.serialization.encoding.Encoder
 /**
  * https://discord.com/developers/docs/reference#locales
  */
-
 @Suppress("EnumEntryName")
 @Serializable(with = DiscordLocale.Serializer::class)
 enum class DiscordLocale(val localeID: String, name: String) {
@@ -65,3 +64,5 @@ enum class DiscordLocale(val localeID: String, name: String) {
             encoder.encodeString(value.localeID)
     }
 }
+
+typealias LocalizationMap = HashMap<DiscordLocale, String>

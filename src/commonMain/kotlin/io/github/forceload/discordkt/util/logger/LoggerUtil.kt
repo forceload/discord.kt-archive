@@ -1,12 +1,11 @@
-package io.github.forceload.discordkt.util
+package io.github.forceload.discordkt.util.logger
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
-object DebugLogger {
-
-    private val timestampMessage: String
+object LoggerUtil {
+    val timestampMessage: String
         get() {
             val now = Clock.System.now()
             val currentTime = now.toLocalDateTime(TimeZone.currentSystemDefault())
@@ -23,11 +22,6 @@ object DebugLogger {
                 |${hour.digit(2)}:${minute.digit(2)}:${second.digit(2)}
             """.trimMargin().replace("\n", " ")
         }
-
-    var enabled = true
-    fun log(something: Any) {
-        if (enabled) println("[${timestampMessage}] $something")
-    }
 }
 
 private fun Int.digit(digits: Int) =

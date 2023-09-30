@@ -1,4 +1,4 @@
-package io.github.forceload.discordkt.command.internal
+package io.github.forceload.discordkt.type
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind

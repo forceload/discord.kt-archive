@@ -1,5 +1,6 @@
 package io.github.forceload.discordkt.network
 
+import io.github.forceload.discordkt.util.DiscordConstants
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -10,15 +11,19 @@ import kotlinx.coroutines.runBlocking
 object RequestUtil {
     private val client = HttpClient(CIO)
 
-    fun get(url: String, authorization: String) =
+    fun get(url: String, authorization: String, vararg params: Pair<String, Any>) =
         runBlocking {
             client.get {
                 url {
                     protocol = URLProtocol.HTTPS
                     host = "discord.com"
 
-                    appendPathSegments("api", "v10")
+                    appendPathSegments("api", "v${DiscordConstants.apiVersion}")
                     appendPathSegments(url)
+
+                    params.forEach {
+                        parameters.append(it.first, it.second.toString())
+                    }
                 }
 
                 headers {
@@ -34,7 +39,7 @@ object RequestUtil {
                     protocol = URLProtocol.HTTPS
                     host = "discord.com"
 
-                    appendPathSegments("api", "v10")
+                    appendPathSegments("api", "v${DiscordConstants.apiVersion}")
                     appendPathSegments(url)
                 }
 
@@ -50,18 +55,18 @@ object RequestUtil {
     fun delete(url: String, authorization: String) =
         runBlocking {
             println(url)
-            /*client.delete {
+            client.delete {
                 url {
                     protocol = URLProtocol.HTTPS
                     host = "discord.com"
 
-                    appendPathSegments("api", "v10")
+                    appendPathSegments("api", "v${DiscordConstants.apiVersion}")
                     appendPathSegments(url)
                 }
 
                 headers {
                     append("Authorization", "Bot $authorization")
                 }
-            }.body<String>()*/
+            }.body<String>()
         }
 }

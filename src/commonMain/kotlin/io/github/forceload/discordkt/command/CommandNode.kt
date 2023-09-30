@@ -5,33 +5,34 @@ import io.github.forceload.discordkt.command.argument.ArgumentType
 import io.github.forceload.discordkt.command.internal.DiscordCommand
 import io.github.forceload.discordkt.command.internal.type.ApplicationCommandOptionType
 import io.github.forceload.discordkt.exception.InvalidArgumentTypeException
+import io.github.forceload.discordkt.type.DiscordAttachment
 import io.github.forceload.discordkt.type.DiscordInteger
 import io.github.forceload.discordkt.type.DiscordString
-import io.github.forceload.discordkt.util.DebugLogger
+import io.github.forceload.discordkt.util.DiscordConstants
 
 class CommandNode(var name: String) {
-    var description: String = ""
+    var description: String = DiscordConstants.defaultDescription
+        set(value) { field = value.ifEmpty { DiscordConstants.defaultDescription } }
+
     private var code = ArrayList<CommandContext.() -> Unit>()
-
-    private val argumentMap = HashMap<String, Pair<String, ArgumentType<*>>>()
-
-    private fun makePair(description: String, type: Any): Pair<String, ArgumentType<*>> {
-        return when (type) {
-            is ArgumentType<*> -> Pair(description, type)
-            is String.Companion -> Pair(description, DiscordString(false))
-            is Int.Companion -> Pair(description, DiscordInteger(false))
-
-            else -> throw InvalidArgumentTypeException(type::class.qualifiedName)
-        }
-    }
+    private val argumentMap = HashMap<String, Pair<Argument, ArgumentType<*>>>()
 
     fun arguments(vararg args: Pair<Any, Any>) {
         for (argument in args) {
-            when (argument.first) {
-                is String -> argumentMap[argument.first as String] = makePair("", argument.second)
-                is Argument -> argumentMap[(argument.first as Argument).name] = makePair((argument.first as Argument).description, argument.second)
+            val newArgument = when (argument.first) {
+                is String -> Argument(argument.first as String, "")
+                is Argument -> argument.first as Argument
+
+                else -> throw InvalidArgumentTypeException(argument.first::class.qualifiedName)
+            }
+
+            argumentMap[newArgument.name] = when (argument.second) {
+                is ArgumentType<*> -> Pair(newArgument, argument.second as ArgumentType<*>)
+                else -> Pair(newArgument, Argument.identifyType(argument.second) as ArgumentType<*>)
             }
         }
+
+        // DebugLogger.log(argumentMap)
     }
 
     fun execute(reaction: CommandContext.() -> Unit) {
@@ -46,15 +47,20 @@ class CommandNode(var name: String) {
                 when (argument.second) {
                     is DiscordString -> ApplicationCommandOptionType.STRING
                     is DiscordInteger -> ApplicationCommandOptionType.INTEGER
+                    is DiscordAttachment -> ApplicationCommandOptionType.ATTACHMENT
                     else -> throw InvalidArgumentTypeException("Argument Type is Invalid")
                 },
-                entry.key, argument.first, argument.second.required
+                entry.key, argument.first.description, argument.second.required
             )
+
+            option.nameLocalizations.putAll(argument.first.nameLocalizations)
+            option.descriptionLocalizations.putAll(argument.first.descriptionLocalizations)
+            option.choices.addAll(argument.first.choice)
 
             result.options.add(option)
         }
 
-        DebugLogger.log(result)
+        // DebugLogger.log(result)
         return result
     }
 }

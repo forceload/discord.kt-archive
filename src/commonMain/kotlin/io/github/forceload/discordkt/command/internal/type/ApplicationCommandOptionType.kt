@@ -31,7 +31,7 @@ enum class ApplicationCommandOptionType(val id: Int) {
             PrimitiveSerialDescriptor("ApplicationCommandOptionType", PrimitiveKind.INT)
 
         override fun deserialize(decoder: Decoder) =
-            ApplicationCommandOptionType.fromID(decoder.decodeInt())
+            fromID(decoder.decodeInt())
 
         override fun serialize(encoder: Encoder, value: ApplicationCommandOptionType) =
             encoder.encodeInt(value.id)

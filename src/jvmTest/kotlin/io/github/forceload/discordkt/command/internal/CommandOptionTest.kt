@@ -3,6 +3,7 @@ package io.github.forceload.discordkt.command.internal
 import io.github.forceload.discordkt.command.internal.type.ApplicationCommandOptionType
 import io.github.forceload.discordkt.command.internal.type.ValueType.StringType.Companion.convert
 import io.github.forceload.discordkt.type.DiscordLocale
+import io.github.forceload.discordkt.type.DiscordPermission
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -61,19 +62,23 @@ class CommandHashTest {
     @Test
     fun commandHashTest() {
         val pingCMD1 = DiscordCommand("1", "9999", "ping", "ping", "1")
-        pingCMD1.options.add(DiscordCommand.ApplicationCommandOption(
-            ApplicationCommandOptionType.STRING,
-            "Ping Message", "Ping Message"
-        ))
+        pingCMD1.options.add(
+            DiscordCommand.ApplicationCommandOption(
+                ApplicationCommandOptionType.STRING,
+                "Ping Message", "Ping Message"
+            )
+        )
 
         pingCMD1.defaultMemberPermissions.add(DiscordPermission.USE_APPLICATION_COMMANDS)
         pingCMD1.defaultMemberPermissions.add(DiscordPermission.ADD_REACTIONS)
 
         val pingCMD2 = DiscordCommand("1", "9999", "ping", "ping", "1")
-        pingCMD2.options.add(DiscordCommand.ApplicationCommandOption(
-            ApplicationCommandOptionType.STRING,
-            "Ping Message", "Ping Message"
-        ))
+        pingCMD2.options.add(
+            DiscordCommand.ApplicationCommandOption(
+                ApplicationCommandOptionType.STRING,
+                "Ping Message", "Ping Message"
+            )
+        )
 
         pingCMD2.defaultMemberPermissions.add(DiscordPermission.ADD_REACTIONS)
         pingCMD2.defaultMemberPermissions.add(DiscordPermission.USE_APPLICATION_COMMANDS)

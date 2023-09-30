@@ -4,6 +4,8 @@ package io.github.forceload.discordkt.command.internal
 
 import io.github.forceload.discordkt.command.internal.type.ApplicationCommandType
 import io.github.forceload.discordkt.type.DiscordLocale
+import io.github.forceload.discordkt.type.DiscordPermission
+import io.github.forceload.discordkt.type.LocalizationMap
 import io.github.forceload.discordkt.util.SerializerExtension.decodeNullableBoolean
 import io.github.forceload.discordkt.util.SerializerExtension.encodeNull
 import io.github.forceload.discordkt.util.SerializerExtension.listSerializer
@@ -25,9 +27,9 @@ object CommandSerializer: KSerializer<DiscordCommand> {
             element<String>("application_id", isOptional = true) // `POST Request`에서 사용되지 않기에 Optional
             element<String>("guild_id", isOptional = true)
             element<String>("name")
-            element<HashMap<DiscordLocale, String>?>("name_localizations", isOptional = true)
+            element<LocalizationMap?>("name_localizations", isOptional = true)
             element<String>("description")
-            element<HashMap<DiscordLocale, String>?>("description_localizations", isOptional = true)
+            element<LocalizationMap?>("description_localizations", isOptional = true)
             element<List<DiscordCommand.ApplicationCommandOption>>("options", isOptional = true)
             element<String?>("default_member_permissions")
             element<Boolean>("dm_permission", isOptional = true)
@@ -44,10 +46,10 @@ object CommandSerializer: KSerializer<DiscordCommand> {
         var guildID: String? = null
 
         var name = ""
-        var nameLocalizations: HashMap<DiscordLocale, String>? = null
+        var nameLocalizations: LocalizationMap? = null
 
         var description = ""
-        var descriptionLocalizations: HashMap<DiscordLocale, String>? = null
+        var descriptionLocalizations: LocalizationMap? = null
 
         var options: ArrayList<DiscordCommand.ApplicationCommandOption>? = null
         var defaultMemberPermissions: Set<DiscordPermission>? = null
@@ -65,11 +67,14 @@ object CommandSerializer: KSerializer<DiscordCommand> {
                     2 -> appID = decodeStringElement(descriptor, i)
                     3 -> guildID = decodeStringElement(descriptor, i)
                     4 -> name = decodeStringElement(descriptor, i)
-                    5 -> nameLocalizations = decodeSerializableElement(descriptor, i, DiscordLocale.localizationSerializer) as HashMap
+                    5 -> nameLocalizations = decodeNullableSerializableElement(descriptor, i, DiscordLocale.localizationSerializer) as HashMap?
                     6 -> description = decodeStringElement(descriptor, i)
-                    7 -> descriptionLocalizations = decodeSerializableElement(descriptor, i, DiscordLocale.localizationSerializer) as HashMap
+                    7 -> descriptionLocalizations = decodeNullableSerializableElement(descriptor, i, DiscordLocale.localizationSerializer) as HashMap?
                     8 -> options = ArrayList(decodeSerializableElement(descriptor, i, DiscordCommand.ApplicationCommandOption.Serializer.listSerializer()))
-                    9 -> defaultMemberPermissions = decodeNullableSerializableElement(descriptor, i, DiscordPermission.SetSerializer)
+                    9 -> defaultMemberPermissions = decodeNullableSerializableElement(
+                        descriptor, i,
+                        DiscordPermission.SetSerializer
+                    )
                     10 -> dmPermission = decodeBooleanElement(descriptor, i)
                     11 -> defaultPermission = decodeNullableBoolean(descriptor, i) ?: true
                     12 -> nsfw = decodeBooleanElement(descriptor, i)
