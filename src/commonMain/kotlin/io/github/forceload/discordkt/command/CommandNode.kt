@@ -8,10 +8,11 @@ import io.github.forceload.discordkt.exception.InvalidArgumentTypeException
 import io.github.forceload.discordkt.type.DiscordAttachment
 import io.github.forceload.discordkt.type.DiscordInteger
 import io.github.forceload.discordkt.type.DiscordString
+import io.github.forceload.discordkt.util.DiscordConstants
 
 class CommandNode(var name: String) {
-    var description: String = " "
-        set(value) { field = value.ifEmpty { " " } }
+    var description: String = DiscordConstants.defaultDescription
+        set(value) { field = value.ifEmpty { DiscordConstants.defaultDescription } }
 
     private var code = ArrayList<CommandContext.() -> Unit>()
     private val argumentMap = HashMap<String, Pair<Argument, ArgumentType<*>>>()

@@ -4,6 +4,7 @@ package io.github.forceload.discordkt.command.internal
 
 import io.github.forceload.discordkt.command.internal.type.ApplicationCommandType
 import io.github.forceload.discordkt.type.DiscordLocale
+import io.github.forceload.discordkt.type.DiscordPermission
 import io.github.forceload.discordkt.type.LocalizationMap
 import io.github.forceload.discordkt.util.SerializerExtension.decodeNullableBoolean
 import io.github.forceload.discordkt.util.SerializerExtension.encodeNull

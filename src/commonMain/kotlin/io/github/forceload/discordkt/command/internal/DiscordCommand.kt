@@ -6,8 +6,9 @@ import io.github.forceload.discordkt.command.internal.type.ApplicationCommandTyp
 import io.github.forceload.discordkt.command.internal.type.ValueType
 import io.github.forceload.discordkt.network.RequestUtil
 import io.github.forceload.discordkt.type.DiscordLocale
+import io.github.forceload.discordkt.type.DiscordPermission
 import io.github.forceload.discordkt.type.LocalizationMap
-import io.github.forceload.discordkt.util.DebugLogger
+import io.github.forceload.discordkt.util.logger.DebugLogger
 import io.github.forceload.discordkt.util.SerializerExtension.encodeNumberElement
 import io.github.forceload.discordkt.util.SerializerExtension.listSerializer
 import io.github.forceload.discordkt.util.SerializerUtil

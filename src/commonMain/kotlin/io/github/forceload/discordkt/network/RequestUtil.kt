@@ -1,5 +1,6 @@
 package io.github.forceload.discordkt.network
 
+import io.github.forceload.discordkt.util.DiscordConstants
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
@@ -17,7 +18,7 @@ object RequestUtil {
                     protocol = URLProtocol.HTTPS
                     host = "discord.com"
 
-                    appendPathSegments("api", "v10")
+                    appendPathSegments("api", "v${DiscordConstants.apiVersion}")
                     appendPathSegments(url)
 
                     params.forEach {
@@ -38,7 +39,7 @@ object RequestUtil {
                     protocol = URLProtocol.HTTPS
                     host = "discord.com"
 
-                    appendPathSegments("api", "v10")
+                    appendPathSegments("api", "v${DiscordConstants.apiVersion}")
                     appendPathSegments(url)
                 }
 
@@ -59,7 +60,7 @@ object RequestUtil {
                     protocol = URLProtocol.HTTPS
                     host = "discord.com"
 
-                    appendPathSegments("api", "v10")
+                    appendPathSegments("api", "v${DiscordConstants.apiVersion}")
                     appendPathSegments(url)
                 }
 

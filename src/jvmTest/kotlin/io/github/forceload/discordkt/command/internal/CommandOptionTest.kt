@@ -3,6 +3,7 @@ package io.github.forceload.discordkt.command.internal
 import io.github.forceload.discordkt.command.internal.type.ApplicationCommandOptionType
 import io.github.forceload.discordkt.command.internal.type.ValueType.StringType.Companion.convert
 import io.github.forceload.discordkt.type.DiscordLocale
+import io.github.forceload.discordkt.type.DiscordPermission
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 

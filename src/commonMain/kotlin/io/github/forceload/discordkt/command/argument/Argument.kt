@@ -5,10 +5,11 @@ import io.github.forceload.discordkt.command.internal.type.ValueType
 import io.github.forceload.discordkt.exception.InvalidArgumentTypeException
 import io.github.forceload.discordkt.type.*
 import io.github.forceload.discordkt.util.CollectionUtil.add
+import io.github.forceload.discordkt.util.DiscordConstants
 import kotlin.jvm.JvmName
 
 data class Argument(
-    val name: String, val description: String = "Default Description",
+    val name: String, val description: String = DiscordConstants.defaultDescription,
     val choice: ArrayList<ApplicationCommandOptionChoice> = ArrayList(),
     val nameLocalizations: LocalizationMap = HashMap(),
     val descriptionLocalizations: LocalizationMap = HashMap(),
@@ -44,6 +45,8 @@ data class Argument(
 // Argument Description
 inline infix fun String.desc(other: String) = this description other
 inline infix fun String.description(other: String) = Argument(this, other)
+inline infix fun <A> Pair<String, A>.desc(other: String): Pair<Argument, ArgumentType<A>> =
+    Pair(Argument(this.first, description = other), Argument.identifyType(this.second))
 
 private typealias argumentPair<A> = Pair<Argument, ArgumentType<A>>
 // Argument Property (like Choices...)
@@ -57,9 +60,9 @@ inline infix fun <A> Pair<Argument, ArgumentType<A>>.property(function: Argument
 inline infix fun <A> Pair<Argument, A>.prop(function: Argument.() -> Unit): argumentPair<A> =
     this property function
 
-@Suppress("UNCHECKED_CAST") @JvmName("property2")
+@JvmName("property2")
 inline infix fun <A> Pair<Argument, A>.property(function: Argument.() -> Unit): argumentPair<A> =
-    Pair(this.first, Argument.identifyType(this.second as Any) as ArgumentType<A>) prop function // Convert to Argument
+    Pair(this.first, Argument.identifyType(this.second)) prop function // Convert to Argument
 
 @JvmName("prop3")
 inline infix fun <A> Pair<String, A>.prop(function: Argument.() -> Unit): argumentPair<A> = this property function
@@ -72,15 +75,35 @@ private typealias localizationPair = Pair<DiscordLocale, String>
 
 // Argument(Command Option) Name Localization for Pair<String, ArgumentType.Companion>
 @JvmName("localName2")
-inline fun <A> Pair<String, ArgumentType<A>>.localName(vararg args: localizationPair) =
+inline fun <A> Pair<String, ArgumentType<A>>.localName(vararg args: localizationPair) = this.localizeName(*args)
+
+@JvmName("localizeName2")
+inline fun <A> Pair<String, ArgumentType<A>>.localizeName(vararg args: localizationPair) =
     Pair(Argument(this.first), this.second).localName(*args)
 
 // Argument(Command Option) Name Localization for Pair<String, Any>
-@Suppress("UNCHECKED_CAST") @JvmName("localName3")
-fun <A> Pair<String, A>.localName(vararg pair: Pair<DiscordLocale, String>): Pair<Argument, ArgumentType<A>> {
-    val newArg = Argument(this.first).apply { localName(*pair) }
-    return Pair(newArg, Argument.identifyType(this.second as Any) as ArgumentType<A>)
-}
+@JvmName("localName3")
+inline fun <A> Pair<String, A>.localName(vararg pair: localizationPair) = this.localizeName(*pair)
+
+@JvmName("localizeName3")
+inline fun <A> Pair<String, A>.localizeName(vararg pair: localizationPair) =
+    Pair(Argument(this.first).localName(*pair), Argument.identifyType(this.second))
+
+// Argument(Command Option) Localizations for Pair<Argument, ArgumentType.Companion(Any)>
+@JvmName("localName4")
+inline fun <A> Pair<Argument, A>.localName(vararg pair: localizationPair) = this.localizeName(*pair)
+
+@JvmName("localizeName4")
+inline fun <A> Pair<Argument, A>.localizeName(vararg pair: localizationPair): argumentPair<A> =
+    Pair(this.first.apply { localName(*pair) }, Argument.identifyType(this.second))
+
+@JvmName("localDesc2")
+inline fun <A> Pair<Argument, A>.localDesc(vararg pair: localizationPair) = this.localDescription(*pair)
+@JvmName("localDescription2")
+inline fun <A> Pair<Argument, A>.localDescription(vararg pair: localizationPair) = this.localizeDescription(*pair)
+@JvmName("localizeDescription2")
+inline fun <A> Pair<Argument, A>.localizeDescription(vararg pair: localizationPair) =
+    Pair(this.first.apply { localDesc(*pair) }, Argument.identifyType(this.second))
 
 // Argument(Command Option) Localizations for Pair<Argument, ArgumentType>
 inline fun <A> argumentPair<A>.localName(vararg args: localizationPair): argumentPair<A> =
