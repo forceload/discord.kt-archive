@@ -31,10 +31,10 @@ class DiscordBot(debug: Boolean) {
     }
 
     fun run(commandOptionMaxDepth: Int = 16) {
-        val commands = RequestUtil.get("applications/${id}/commands", token)
+        val commands = RequestUtil.get("applications/${id}/commands", token, "with_localizations" to true)
         SerializerUtil.commandOptionMaxDepth = commandOptionMaxDepth
 
-        val removedCommands = ArrayList<String>()
+        DebugLogger.log(commands.dropLast(1))
         val commandList = SerializerUtil.jsonBuild.decodeFromString<ArrayList<DiscordCommand>>(commands)
 
         DebugLogger.log(commandList)
@@ -52,6 +52,8 @@ class DiscordBot(debug: Boolean) {
                     val post = RequestUtil.post("applications/$id/commands", token, serialized)
 
                     DebugLogger.log(serialized)
+                    DebugLogger.log(generated)
+                    DebugLogger.log(command)
                     DebugLogger.log(post)
                 }
             }

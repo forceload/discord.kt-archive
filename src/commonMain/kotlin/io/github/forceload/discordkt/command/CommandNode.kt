@@ -5,14 +5,15 @@ import io.github.forceload.discordkt.command.argument.ArgumentType
 import io.github.forceload.discordkt.command.internal.DiscordCommand
 import io.github.forceload.discordkt.command.internal.type.ApplicationCommandOptionType
 import io.github.forceload.discordkt.exception.InvalidArgumentTypeException
+import io.github.forceload.discordkt.type.DiscordAttachment
 import io.github.forceload.discordkt.type.DiscordInteger
 import io.github.forceload.discordkt.type.DiscordString
-import io.github.forceload.discordkt.util.DebugLogger
 
 class CommandNode(var name: String) {
-    var description: String = ""
-    private var code = ArrayList<CommandContext.() -> Unit>()
+    var description: String = " "
+        set(value) { field = value.ifEmpty { " " } }
 
+    private var code = ArrayList<CommandContext.() -> Unit>()
     private val argumentMap = HashMap<String, Pair<Argument, ArgumentType<*>>>()
 
     fun arguments(vararg args: Pair<Any, Any>) {
@@ -26,14 +27,11 @@ class CommandNode(var name: String) {
 
             argumentMap[newArgument.name] = when (argument.second) {
                 is ArgumentType<*> -> Pair(newArgument, argument.second as ArgumentType<*>)
-                is String.Companion -> Pair(newArgument, DiscordString(false))
-                is Int.Companion -> Pair(newArgument, DiscordInteger(false))
-
-                else -> throw InvalidArgumentTypeException(argument.second::class.qualifiedName)
+                else -> Pair(newArgument, Argument.identifyType(argument.second) as ArgumentType<*>)
             }
         }
 
-        DebugLogger.log(argumentMap)
+        // DebugLogger.log(argumentMap)
     }
 
     fun execute(reaction: CommandContext.() -> Unit) {
@@ -48,12 +46,12 @@ class CommandNode(var name: String) {
                 when (argument.second) {
                     is DiscordString -> ApplicationCommandOptionType.STRING
                     is DiscordInteger -> ApplicationCommandOptionType.INTEGER
+                    is DiscordAttachment -> ApplicationCommandOptionType.ATTACHMENT
                     else -> throw InvalidArgumentTypeException("Argument Type is Invalid")
                 },
                 entry.key, argument.first.description, argument.second.required
             )
 
-            DebugLogger.log(argument)
             option.nameLocalizations.putAll(argument.first.nameLocalizations)
             option.descriptionLocalizations.putAll(argument.first.descriptionLocalizations)
             option.choices.addAll(argument.first.choice)
@@ -61,7 +59,7 @@ class CommandNode(var name: String) {
             result.options.add(option)
         }
 
-        DebugLogger.log(result)
+        // DebugLogger.log(result)
         return result
     }
 }

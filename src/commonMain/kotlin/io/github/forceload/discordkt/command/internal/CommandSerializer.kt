@@ -66,11 +66,14 @@ object CommandSerializer: KSerializer<DiscordCommand> {
                     2 -> appID = decodeStringElement(descriptor, i)
                     3 -> guildID = decodeStringElement(descriptor, i)
                     4 -> name = decodeStringElement(descriptor, i)
-                    5 -> nameLocalizations = decodeSerializableElement(descriptor, i, DiscordLocale.localizationSerializer) as HashMap
+                    5 -> nameLocalizations = decodeNullableSerializableElement(descriptor, i, DiscordLocale.localizationSerializer) as HashMap?
                     6 -> description = decodeStringElement(descriptor, i)
-                    7 -> descriptionLocalizations = decodeSerializableElement(descriptor, i, DiscordLocale.localizationSerializer) as HashMap
+                    7 -> descriptionLocalizations = decodeNullableSerializableElement(descriptor, i, DiscordLocale.localizationSerializer) as HashMap?
                     8 -> options = ArrayList(decodeSerializableElement(descriptor, i, DiscordCommand.ApplicationCommandOption.Serializer.listSerializer()))
-                    9 -> defaultMemberPermissions = decodeNullableSerializableElement(descriptor, i, DiscordPermission.SetSerializer)
+                    9 -> defaultMemberPermissions = decodeNullableSerializableElement(
+                        descriptor, i,
+                        DiscordPermission.SetSerializer
+                    )
                     10 -> dmPermission = decodeBooleanElement(descriptor, i)
                     11 -> defaultPermission = decodeNullableBoolean(descriptor, i) ?: true
                     12 -> nsfw = decodeBooleanElement(descriptor, i)

@@ -11,6 +11,7 @@ import io.github.forceload.discordkt.util.DebugLogger
 import io.github.forceload.discordkt.util.SerializerExtension.encodeNumberElement
 import io.github.forceload.discordkt.util.SerializerExtension.listSerializer
 import io.github.forceload.discordkt.util.SerializerUtil
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
@@ -98,6 +99,22 @@ data class DiscordCommand(
 
             override fun toString(): String {
                 return "ApplicationCommandOptionChoice(name='$name', value=$value, nameLocalizations=$nameLocalizations)"
+            }
+
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (other !is ApplicationCommandOptionChoice) return false
+
+                if (name != other.name) return false
+                if (value != other.value) return false
+                return nameLocalizations == other.nameLocalizations
+            }
+
+            override fun hashCode(): Int {
+                var result = name.hashCode()
+                result = 31 * result + value.hashCode()
+                result = 31 * result + nameLocalizations.hashCode()
+                return result
             }
         }
 
@@ -196,14 +213,15 @@ data class DiscordCommand(
                     element<Boolean>("autocomplete", isOptional = true)
                 }
 
+            @OptIn(ExperimentalSerializationApi::class)
             override fun deserialize(decoder: Decoder): ApplicationCommandOption {
                 var type: ApplicationCommandOptionType? = null
 
                 var name: String? = null
-                var nameLocalizations = LocalizationMap()
+                var nameLocalizations: LocalizationMap? = LocalizationMap()
 
                 var description: String? = null
-                var descriptionLocalizations = LocalizationMap()
+                var descriptionLocalizations: LocalizationMap? = LocalizationMap()
 
                 var required = false
                 var choices = ArrayList<ApplicationCommandOptionChoice>()
@@ -226,10 +244,10 @@ data class DiscordCommand(
                             0 -> type = decodeSerializableElement(descriptorCopy, i, ApplicationCommandOptionType.Serializer)
 
                             1 -> name = decodeStringElement(descriptorCopy, i)
-                            2 -> nameLocalizations = decodeSerializableElement(descriptorCopy, i, DiscordLocale.localizationSerializer) as HashMap
+                            2 -> nameLocalizations = decodeNullableSerializableElement(descriptorCopy, i, DiscordLocale.localizationSerializer) as HashMap?
 
                             3 -> description = decodeStringElement(descriptorCopy, i)
-                            4 -> descriptionLocalizations = decodeSerializableElement(descriptorCopy, i, DiscordLocale.localizationSerializer) as HashMap
+                            4 -> descriptionLocalizations = decodeNullableSerializableElement(descriptorCopy, i, DiscordLocale.localizationSerializer) as HashMap?
 
                             5 -> required = decodeBooleanElement(descriptorCopy, i)
                             6 -> choices = ArrayList(decodeSerializableElement(descriptorCopy, i, ApplicationCommandOptionChoice.Serializer.listSerializer()))
@@ -251,8 +269,8 @@ data class DiscordCommand(
 
                 val result = ApplicationCommandOption(type!!, name!!, description!!, required)
 
-                result.nameLocalizations.putAll(nameLocalizations)
-                result.descriptionLocalizations.putAll(descriptionLocalizations)
+                nameLocalizations?.let { result.nameLocalizations.putAll(nameLocalizations!!) }
+                descriptionLocalizations?.let { result.descriptionLocalizations.putAll(descriptionLocalizations!!) }
 
                 result.choices.addAll(choices)
                 result.options.addAll(options)

@@ -10,7 +10,7 @@ import kotlinx.coroutines.runBlocking
 object RequestUtil {
     private val client = HttpClient(CIO)
 
-    fun get(url: String, authorization: String) =
+    fun get(url: String, authorization: String, vararg params: Pair<String, Any>) =
         runBlocking {
             client.get {
                 url {
@@ -19,6 +19,10 @@ object RequestUtil {
 
                     appendPathSegments("api", "v10")
                     appendPathSegments(url)
+
+                    params.forEach {
+                        parameters.append(it.first, it.second.toString())
+                    }
                 }
 
                 headers {
@@ -50,7 +54,7 @@ object RequestUtil {
     fun delete(url: String, authorization: String) =
         runBlocking {
             println(url)
-            /*client.delete {
+            client.delete {
                 url {
                     protocol = URLProtocol.HTTPS
                     host = "discord.com"
@@ -62,6 +66,6 @@ object RequestUtil {
                 headers {
                     append("Authorization", "Bot $authorization")
                 }
-            }.body<String>()*/
+            }.body<String>()
         }
 }
