@@ -1,5 +1,6 @@
 package io.github.forceload.discordkt.type.gateway.event.dispatch
 
+import io.github.forceload.discordkt.exception.gateway.GatewaySerializationFailException
 import io.github.forceload.discordkt.type.gateway.event.GatewayEventType
 import io.github.forceload.discordkt.util.DiscordConstants
 import kotlinx.serialization.InternalSerializationApi
@@ -20,7 +21,11 @@ abstract class DispatchEventType: GatewayEventType() {
             ) as Map<String, KSerializer<DispatchEventType>>)
         }
 
-        operator fun get(key: String): KSerializer<DispatchEventType> = events[key.uppercase()]!!
+        operator fun get(key: String): KSerializer<DispatchEventType> {
+            try { return events[key.uppercase()]!! } catch (err: NullPointerException) {
+                throw GatewaySerializationFailException("Unregistered Dispatch Type: $key")
+            }
+        }
     }
 
     abstract val code: String

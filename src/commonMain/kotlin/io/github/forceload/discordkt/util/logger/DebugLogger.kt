@@ -4,6 +4,7 @@ object DebugLogger {
 
     var enabled = true
     fun log(something: Any) {
-        if (enabled) println("[DEBUG ${LoggerUtil.timestampMessage}] $something")
+        val prefixMessage = "[DEBUG ${LoggerUtil.timestampMessage}]"
+        if (enabled) println("$prefixMessage ${something.toString().replace("\n", prefixMessage)}")
     }
 }

@@ -1,5 +1,6 @@
 package io.github.forceload.discordkt.type.gateway.event
 
+import io.github.forceload.discordkt.exception.gateway.GatewaySerializationFailException
 import io.github.forceload.discordkt.type.gateway.event.dispatch.DispatchEventType
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
@@ -24,7 +25,9 @@ GatewayEventType {
         operator fun get(op: Int, type: String? = null): KSerializer<GatewayEventType> {
             return when (op) {
                 0 -> DispatchEventType[type!!] as KSerializer<GatewayEventType>
-                else -> events[op]!!
+                else -> try { events[op]!! } catch (err: NullPointerException) {
+                    throw GatewaySerializationFailException("Unregistered Event Type: Opcode $op")
+                }
             }
         }
     }
