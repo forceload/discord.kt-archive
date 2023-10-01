@@ -1,5 +1,6 @@
 package io.github.forceload.discordkt.type.gateway.event
 
+import io.github.forceload.discordkt.type.gateway.DiscordPresence
 import io.github.forceload.discordkt.type.gateway.GatewayConnectionProperty
 import io.github.forceload.discordkt.type.gateway.GatewayIntent
 import io.github.forceload.discordkt.util.DiscordConstants
@@ -31,7 +32,7 @@ class Identify(
                 element<Boolean>("compress", isOptional = true)
                 element<Int>("large_threshold", isOptional = true)
                 element<Array<Int>>("shard", isOptional = true)
-                element<JsonObject>("presence", isOptional = true) // 구현 귀찮아
+                element<DiscordPresence>("presence", isOptional = true)
                 element<Int>("intents")
             }
 
