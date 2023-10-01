@@ -4,12 +4,14 @@ import io.github.forceload.discordkt.type.gateway.GatewayEvent
 import io.github.forceload.discordkt.type.gateway.event.GatewayEventType
 import io.github.forceload.discordkt.util.SerializerUtil
 import io.github.forceload.discordkt.util.logger.DebugLogger
+import io.github.forceload.discordkt.util.logger.WarnLogger
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.websocket.*
 import io.ktor.http.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.isActive
 import kotlinx.serialization.KSerializer
 
@@ -51,6 +53,11 @@ class WebSocketClient(val host: String, val url: String, val params: HashMap<Str
         isRunning = false
     }
 
+    fun close(code: Short) = close("", code)
+    fun close(reason: String) = close(reason, CloseReason.Codes.NORMAL)
+    fun close(reason: String, code: CloseReason.Codes) = close(CloseReason(code, reason))
+    fun close(reason: String, code: Short) = close(CloseReason(code, reason))
+
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun launch(code: WebSocketClient.(messages: Array<String>) -> Unit) {
         if (isRunning) return
@@ -64,28 +71,48 @@ class WebSocketClient(val host: String, val url: String, val params: HashMap<Str
 
         client.webSocket(
             method = HttpMethod.Get, host = host, path = "/${url}${paramUrl}"
-        ) {
+        ) client@ {
             session = this
             while (isRunning) {
                 var i = 0
-                loop@ while (!incoming.isEmpty) {
-                    val message = incoming.receive() as? Frame.Text? ?: break@loop
-                    val msgString = message.readText()
-                    DebugLogger.log("${i++}: $msgString")
-                    events.add(msgString)
+                try {
+                    loop@ while (!incoming.isEmpty) {
+                        val message = incoming.receive() as? Frame.Text? ?: break@loop
+                        val msgString = message.readText()
+                        DebugLogger.log("Receive ${i++}: $msgString")
+                        events.add(msgString)
+                    }
+                } catch (err: ClosedReceiveChannelException) {
+                    val reason = this.closeReason.await()!!
+                    WarnLogger.log("Close Code: ${reason.code}\nMessage: ${reason.message}")
+                    return@client
                 }
 
                 this@WebSocketClient.code(events.toTypedArray())
                 events.clear()
 
+                i = 0
                 while (messageQueue.isNotEmpty()) {
                     val msgString = messageQueue.removeFirst()
-                    DebugLogger.log(msgString)
+                    DebugLogger.log("Send ${i++}: $msgString")
                     send(msgString)
                 }
 
-                if (!this.isActive) {
-                    DebugLogger.log(this.closeReason)
+                if ((!isRunning || !this.isActive) && reason != null) {
+                    var knownReason = when (reason!!.knownReason) {
+                        CloseReason.Codes.GOING_AWAY -> {
+                            if (!isRunning) CloseReason.Codes.INTERNAL_ERROR
+                            else reason!!.knownReason
+                        }
+
+                        else -> reason!!.knownReason
+                    }
+
+                    WarnLogger.log("${knownReason}: ${reason!!.message}")
+                } else if (!this.isActive) {
+                    val reason = this.closeReason.await()!!
+                    WarnLogger.log("Close Code: ${reason.code}\nMessage: ${reason.message}")
+                    return@client
                 }
             }
 

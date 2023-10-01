@@ -4,6 +4,7 @@ import io.github.forceload.discordkt.command.CommandNode
 import io.github.forceload.discordkt.command.internal.CommandSerializer
 import io.github.forceload.discordkt.command.internal.DiscordCommand
 import io.github.forceload.discordkt.exception.CommandAlreadyExistsException
+import io.github.forceload.discordkt.exception.gateway.GatewaySerializationFailException
 import io.github.forceload.discordkt.internal.GatewayBot
 import io.github.forceload.discordkt.network.RequestUtil
 import io.github.forceload.discordkt.network.WebSocketClient
@@ -28,9 +29,7 @@ fun bot(debug: Boolean = false, application: DiscordBot.() -> Unit) =
 class DiscordBot(debug: Boolean) {
     lateinit var id: String
     lateinit var token: String
-    val intent = mutableSetOf(
-        GatewayIntent.DIRECT_MESSAGES, GatewayIntent.DIRECT_MESSAGE_REACTIONS
-    )
+    val intent = mutableSetOf<GatewayIntent>()
 
     init {
         DebugLogger.enabled = debug
@@ -101,12 +100,27 @@ class DiscordBot(debug: Boolean) {
             }
 
             val webSocketClient = WebSocketClient.newInstance(gatewayBot.url, version = DiscordConstants.apiVersion)
-            webSocketClient.launch client@ { messages ->
+            webSocketClient.launch client@{ messages ->
                 val currentTime = Clock.System.now().toEpochMilliseconds()
 
                 messages.forEach { message ->
-                    val event = SerializerUtil.jsonBuild.decodeFromString<GatewayEvent>(message)
+                    val event: GatewayEvent
+                    try {
+                        try { event = SerializerUtil.jsonBuild.decodeFromString<GatewayEvent>(message) }
+                        catch (err: GatewaySerializationFailException) {
+                            WarnLogger.log(err.stackTraceToString())
+                            return@forEach
+                        }
+                    } catch (err: Throwable) { // INTERNAL_ERROR
+                        this.close("${err::class.qualifiedName}: ${err.message}" ?: "Unknown error", 1001)
+
+                        WarnLogger.log(err.stackTraceToString())
+                        WarnLogger.log("The bot will be shut down in a few seconds...")
+                        return@client
+                    }
+
                     if (event.s != null) seqNum = event.s!!
+                    DebugLogger.log(event)
 
                     when (event.op) {
                         DiscordConstants.OpCode.HELLO -> {
@@ -119,12 +133,18 @@ class DiscordBot(debug: Boolean) {
                             prepared = true
                         }
 
-                        DiscordConstants.OpCode.RECONNECT -> this.close()
+                        DiscordConstants.OpCode.RECONNECT -> this.close(1001)
+                        DiscordConstants.OpCode.HEARTBEAT -> {
+                            sendHeartbeat(this, seqNum)
+                            latestHeartbeat = currentTime
+                        }
                     }
+                }
 
-                    if (prepared && currentTime - latestHeartbeat >= heartbeatInterval) {
-                        sendHeartbeat(this, seqNum)
-                    }
+                if (prepared && currentTime - latestHeartbeat >= heartbeatInterval) {
+                    sendHeartbeat(this, seqNum)
+                    DebugLogger.log("Heartbeat Sent: Time: ${currentTime}, Delay: ${currentTime - latestHeartbeat}")
+                    latestHeartbeat = currentTime
                 }
             }
 

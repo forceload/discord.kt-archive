@@ -55,7 +55,7 @@ enum class DiscordLocale(val localeID: String, name: String) {
 
     object Serializer: KSerializer<DiscordLocale> {
         override val descriptor: SerialDescriptor =
-            PrimitiveSerialDescriptor("ApplicationCommandType", PrimitiveKind.STRING)
+            PrimitiveSerialDescriptor("DiscordLocale", PrimitiveKind.STRING)
 
         override fun deserialize(decoder: Decoder) =
             DiscordLocale.fromID(decoder.decodeString())
