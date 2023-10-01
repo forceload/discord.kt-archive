@@ -1,6 +1,7 @@
 package io.github.forceload.discordkt.type.gateway
 
 import io.github.forceload.discordkt.type.gateway.event.GatewayEventType
+import io.github.forceload.discordkt.util.DiscordConstants
 import io.github.forceload.discordkt.util.SerializerUtil
 import io.github.forceload.discordkt.util.SerializerUtil.makeStructure
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -36,15 +37,22 @@ class GatewayEvent(val op: Int, val d: GatewayEventType) {
             var s: Int? = null
             var t: String? = null
 
+            var element: JsonElement? = null
             decoder.makeStructure(descriptor) { index ->
                 when (index) {
                     0 -> op = decodeIntElement(descriptor, index)
                     1 -> {
-                        val element = decodeSerializableElement(descriptor, index, JsonElement.serializer())
-                        d = SerializerUtil.jsonBuild.decodeFromJsonElement(GatewayEventType[op], element)
+                        element = decodeSerializableElement(descriptor, index, JsonElement.serializer())
+                        if (op != DiscordConstants.OpCode.DISPATCH || t != null)
+                            d = SerializerUtil.jsonBuild.decodeFromJsonElement(GatewayEventType[op, t], element!!)
                     }
                     2 -> s = decodeNullableSerializableElement(descriptor, index, Int.serializer())
-                    3 -> t = decodeNullableSerializableElement(descriptor, index, String.serializer())
+                    3 -> {
+                        t = decodeNullableSerializableElement(descriptor, index, String.serializer())
+                        if (op == DiscordConstants.OpCode.DISPATCH && element != null) {
+                            d = SerializerUtil.jsonBuild.decodeFromJsonElement(GatewayEventType[op, t], element!!)
+                        }
+                    }
                 }
             }
 
@@ -58,7 +66,7 @@ class GatewayEvent(val op: Int, val d: GatewayEventType) {
         override fun serialize(encoder: Encoder, value: GatewayEvent) {
             encoder.beginStructure(descriptor).run {
                 encodeIntElement(descriptor, 0, value.op)
-                encodeSerializableElement(descriptor, 1, GatewayEventType[value.op], value.d)
+                encodeSerializableElement(descriptor, 1, GatewayEventType[value.op, value.t], value.d)
                 value.s?.let { encodeIntElement(descriptor, 2, value.s!!) }
                 value.t?.let { encodeStringElement(descriptor, 3, value.t!!) }
 

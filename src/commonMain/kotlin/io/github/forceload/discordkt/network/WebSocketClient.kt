@@ -71,16 +71,17 @@ class WebSocketClient(val host: String, val url: String, val params: HashMap<Str
                 loop@ while (!incoming.isEmpty) {
                     val message = incoming.receive() as? Frame.Text? ?: break@loop
                     val msgString = message.readText()
-                    DebugLogger.log("${i++}: $msgString")
+                    DebugLogger.log("Receive ${i++}: $msgString")
                     events.add(msgString)
                 }
 
                 this@WebSocketClient.code(events.toTypedArray())
                 events.clear()
 
+                i = 0
                 while (messageQueue.isNotEmpty()) {
                     val msgString = messageQueue.removeFirst()
-                    DebugLogger.log(msgString)
+                    DebugLogger.log("Send ${i++}: $msgString")
                     send(msgString)
                 }
 

@@ -28,9 +28,7 @@ fun bot(debug: Boolean = false, application: DiscordBot.() -> Unit) =
 class DiscordBot(debug: Boolean) {
     lateinit var id: String
     lateinit var token: String
-    val intent = mutableSetOf(
-        GatewayIntent.DIRECT_MESSAGES, GatewayIntent.DIRECT_MESSAGE_REACTIONS
-    )
+    val intent = mutableSetOf<GatewayIntent>()
 
     init {
         DebugLogger.enabled = debug
@@ -108,6 +106,8 @@ class DiscordBot(debug: Boolean) {
                     val event = SerializerUtil.jsonBuild.decodeFromString<GatewayEvent>(message)
                     if (event.s != null) seqNum = event.s!!
 
+                    DebugLogger.log(event)
+
                     when (event.op) {
                         DiscordConstants.OpCode.HELLO -> {
                             heartbeatInterval = (event.d as Hello).heartbeatInterval * heartbeatTimeScale
@@ -120,11 +120,17 @@ class DiscordBot(debug: Boolean) {
                         }
 
                         DiscordConstants.OpCode.RECONNECT -> this.close()
+                        DiscordConstants.OpCode.HEARTBEAT -> {
+                            sendHeartbeat(this, seqNum)
+                            latestHeartbeat = currentTime
+                        }
                     }
+                }
 
-                    if (prepared && currentTime - latestHeartbeat >= heartbeatInterval) {
-                        sendHeartbeat(this, seqNum)
-                    }
+                if (prepared && currentTime - latestHeartbeat >= heartbeatInterval) {
+                    sendHeartbeat(this, seqNum)
+                    DebugLogger.log("Heartbeat Sent: Time: ${currentTime}, Delay: ${currentTime - latestHeartbeat}")
+                    latestHeartbeat = currentTime
                 }
             }
 

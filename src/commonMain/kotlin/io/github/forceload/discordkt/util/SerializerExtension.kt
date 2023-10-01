@@ -3,6 +3,7 @@ package io.github.forceload.discordkt.util
 import io.github.forceload.discordkt.command.internal.type.ValueType
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.builtins.ArraySerializer
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -15,6 +16,9 @@ import kotlinx.serialization.encoding.Encoder
 
 object SerializerExtension {
     fun <T> KSerializer<T>.listSerializer() = ListSerializer(this)
+    @OptIn(ExperimentalSerializationApi::class)
+    inline fun <reified T : Any> KSerializer<T>.arraySerializer() = ArraySerializer(this)
+
     fun CompositeEncoder.encodeNumberElement(descriptor: SerialDescriptor, index: Int, value: Number) {
         when (value) {
             is Int -> this.encodeSerializableElement(descriptor, index, ValueType.Serializer, ValueType.IntType(value))
@@ -56,5 +60,17 @@ object SerializerExtension {
     @OptIn(ExperimentalSerializationApi::class)
     fun CompositeDecoder.decodeNullableBoolean(descriptor: SerialDescriptor, index: Int) =
         this.decodeNullableSerializableElement(descriptor, index, Boolean.serializer())
+
+    @OptIn(ExperimentalSerializationApi::class)
+    fun CompositeEncoder.encodeNullableString(descriptor: SerialDescriptor, index: Int, value: String?) =
+        this.encodeNullableSerializableElement(descriptor, index, String.serializer(), value)
+
+    @OptIn(ExperimentalSerializationApi::class)
+    fun CompositeDecoder.decodeNullableString(descriptor: SerialDescriptor, index: Int) =
+        this.decodeNullableSerializableElement(descriptor, index, String.serializer())
+
+    @OptIn(ExperimentalSerializationApi::class)
+    fun CompositeDecoder.decodeNullableInt(descriptor: SerialDescriptor, index: Int) =
+        this.decodeNullableSerializableElement(descriptor, index, Int.serializer())
 
 }
