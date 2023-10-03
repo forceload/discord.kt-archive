@@ -1,7 +1,9 @@
 package io.github.forceload.discordkt.type.gateway
 
 import io.github.forceload.discordkt.util.SerializerExtension.arraySerializer
+import io.github.forceload.discordkt.util.SerializerExtension.decodeNullableString
 import io.github.forceload.discordkt.util.SerializerUtil.makeStructure
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
@@ -34,6 +36,42 @@ enum class ActivityType(val id: Int) {
 
         override fun serialize(encoder: Encoder, value: ActivityType) =
             encoder.encodeInt(value.id)
+    }
+}
+
+@Suppress("unused")
+enum class ActivityFlags(val id: Int) {
+    INSTANCE(1 shl 0),
+    JOIN(1 shl 1),
+    SPECTATE(1 shl 2),
+    JOIN_REQUEST(1 shl 3),
+    SYNC(1 shl 6),
+    PLAY(1 shl 7),
+    PARTY_PRIVACY_FRIENDS(1 shl 8),
+    PARTY_PRIVACY_VOICE_CHANNEL(1 shl 9),
+    EMBEDDED(1 shl 10);
+
+    object SetSerializer: KSerializer<Set<ActivityFlags>> {
+        override val descriptor: SerialDescriptor =
+            PrimitiveSerialDescriptor("DiscordUserFlags", PrimitiveKind.INT)
+
+        override fun deserialize(decoder: Decoder): Set<ActivityFlags> {
+            val intentFlag = decoder.decodeInt()
+
+            val permissionSet = mutableSetOf<ActivityFlags>()
+            ActivityFlags.entries.forEach {
+                if (intentFlag and it.id == it.id) permissionSet.add(it)
+            }
+
+            return permissionSet
+        }
+
+        override fun serialize(encoder: Encoder, value: Set<ActivityFlags>) {
+            var result = 0
+            value.forEach { result = result or it.id }
+
+            encoder.encodeInt(result)
+        }
     }
 }
 
@@ -227,14 +265,29 @@ class ActivitySecrets(val join: String? = null, val spectate: String? = null, va
     }
 }
 
+@Serializable
+data class ActivityButtons(val label: String, val url: String)
+
+/**
+ * https://discord.com/developers/docs/topics/gateway-events#activity-object-activity-structure
+ */
 @Serializable(with = DiscordActivity.Serializer::class)
 class DiscordActivity(
     val name: String,
     val type: ActivityType,
     val url: String? = null,
     val createdAt: Int,
-    val timestamps: ActivityTimestamps,
-    val appID: String? = null
+    val timestamps: ActivityTimestamps? = null,
+    val appID: String? = null,
+    val details: String? = null,
+    val state: String? = null,
+    val emoji: ActivityEmoji? = null,
+    val party: ActivityParty? = null,
+    val assets: ActivityAssets? = null,
+    val secrets: ActivitySecrets? = null,
+    val instance: Boolean? = null,
+    val flags: Set<ActivityFlags>? = null,
+    val buttons: Array<ActivityButtons>? = null
 ) {
     object Serializer: KSerializer<DiscordActivity> {
         override val descriptor: SerialDescriptor =
@@ -252,16 +305,76 @@ class DiscordActivity(
                 element<ActivityAssets>("assets", isOptional = true)
                 element<ActivitySecrets>("secrets", isOptional = true)
                 element<Boolean>("instance", isOptional = true)
-                TODO("More Fields")
+                element<Int>("flags", isOptional = true)
+                element<Array<ActivityButtons>>("buttons", isOptional = true)
             }
 
+        @OptIn(ExperimentalSerializationApi::class)
         override fun deserialize(decoder: Decoder): DiscordActivity {
-            TODO("Not yet implemented")
+            var name: String? = null
+            var type: ActivityType? = null
+            var url: String? = null
+            var createdAt: Int? = null
+            var timestamps: ActivityTimestamps? = null
+            var appID: String? = null
+            var details: String? = null
+            var state: String? = null
+            var emoji: ActivityEmoji? = null
+            var party: ActivityParty? = null
+            var assets: ActivityAssets? = null
+            var secrets: ActivitySecrets? = null
+            var instance: Boolean? = null
+            var flags: Set<ActivityFlags>? = null
+            var buttons: Array<ActivityButtons>? = null
+
+            decoder.makeStructure(descriptor) { index ->
+                when (index) {
+                    0 -> name = decodeStringElement(descriptor, index)
+                    1 -> type = decodeSerializableElement(descriptor, index, ActivityType.Serializer)
+                    2 -> url = decodeNullableString(descriptor, index)
+                    3 -> createdAt = decodeIntElement(descriptor, index)
+                    4 -> timestamps = decodeSerializableElement(descriptor, index, ActivityTimestamps.Serializer)
+                    5 -> appID = decodeStringElement(descriptor, index)
+                    6 -> details = decodeNullableString(descriptor, index)
+                    7 -> state = decodeNullableString(descriptor, index)
+                    8 -> emoji = decodeNullableSerializableElement(descriptor, index, ActivityEmoji.Serializer)
+                    9 -> party = decodeSerializableElement(descriptor, index, ActivityParty.Serializer)
+                    10 -> secrets = decodeSerializableElement(descriptor, index, ActivitySecrets.Serializer)
+                    11 -> instance = decodeBooleanElement(descriptor, index)
+                    12 -> flags = decodeSerializableElement(descriptor, index, ActivityFlags.SetSerializer)
+                    13 -> buttons =
+                        decodeSerializableElement(descriptor, index, ActivityButtons.serializer().arraySerializer())
+                }
+            }
+
+            return DiscordActivity(
+                name!!, type!!, url, createdAt!!, timestamps, appID,
+                details, state, emoji, party, assets, secrets, instance, flags, buttons
+            )
         }
 
         override fun serialize(encoder: Encoder, value: DiscordActivity) {
-            TODO("Not yet implemented")
-        }
+            encoder.beginStructure(descriptor).run {
+                encodeStringElement(descriptor, 0, value.name)
+                encodeSerializableElement(descriptor, 1, ActivityType.Serializer, value.type)
+                value.url?.let { encodeStringElement(descriptor, 2, value.url) }
+                encodeIntElement(descriptor, 3, value.createdAt)
+                value.timestamps?.let { encodeSerializableElement(descriptor, 4, ActivityTimestamps.Serializer, value.timestamps) }
+                value.appID?.let { encodeStringElement(descriptor, 5, value.appID) }
+                value.details?.let { encodeStringElement(descriptor, 6, value.details) }
+                value.state?.let { encodeStringElement(descriptor, 7, value.state) }
+                value.emoji?.let { encodeSerializableElement(descriptor, 8, ActivityEmoji.Serializer, value.emoji) }
+                value.party?.let { encodeSerializableElement(descriptor, 9, ActivityParty.Serializer, value.party) }
+                value.assets?.let { encodeSerializableElement(descriptor, 10, ActivityAssets.Serializer, value.assets) }
+                value.secrets?.let { encodeSerializableElement(descriptor, 11, ActivitySecrets.Serializer, value.secrets) }
+                value.instance?.let { encodeBooleanElement(descriptor, 12, value.instance) }
+                value.flags?.let { encodeSerializableElement(descriptor, 13, ActivityFlags.SetSerializer, value.flags) }
+                value.buttons?.let {
+                    encodeSerializableElement(descriptor, 14, ActivityButtons.serializer().arraySerializer(), value.buttons)
+                }
 
+                endStructure(descriptor)
+            }
+        }
     }
 }

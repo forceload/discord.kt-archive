@@ -3,12 +3,14 @@ package io.github.forceload.discordkt
 import io.github.forceload.discordkt.command.argument.*
 import io.github.forceload.discordkt.type.DiscordLocale
 import io.github.forceload.discordkt.type.URLFile
+import io.github.forceload.discordkt.type.gateway.PresenceStatus
 import io.github.forceload.discordkt.type.require
 
 suspend fun main() {
     bot(debug = true) {
         id = System.getenv("DISCORD_KT_TEST_USERID")
         token = System.getenv("DISCORD_KT_TEST_TOKEN")
+        status = PresenceStatus.ONLINE
 
         command("direct_message") {
             arguments(
@@ -32,6 +34,10 @@ suspend fun main() {
             )
 
             description = ""
+        }
+
+        command("shutdown") {
+            this@bot.stop()
         }
     }.runBlocking()
 }

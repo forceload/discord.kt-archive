@@ -8,8 +8,10 @@ import io.github.forceload.discordkt.exception.gateway.GatewaySerializationFailE
 import io.github.forceload.discordkt.internal.GatewayBot
 import io.github.forceload.discordkt.network.RequestUtil
 import io.github.forceload.discordkt.network.WebSocketClient
+import io.github.forceload.discordkt.type.gateway.DiscordPresence
 import io.github.forceload.discordkt.type.gateway.GatewayEvent
 import io.github.forceload.discordkt.type.gateway.GatewayIntent
+import io.github.forceload.discordkt.type.gateway.PresenceStatus
 import io.github.forceload.discordkt.type.gateway.event.Heartbeat
 import io.github.forceload.discordkt.type.gateway.event.Hello
 import io.github.forceload.discordkt.type.gateway.event.Identify
@@ -31,6 +33,38 @@ class DiscordBot(debug: Boolean) {
     lateinit var token: String
     val intent = mutableSetOf<GatewayIntent>()
 
+    /**
+     * Presence Variables
+     *
+     * https://discord.com/developers/docs/topics/gateway-events#update-presence-status-types
+     */
+    var status = PresenceStatus.ONLINE
+        set(value) {
+            var updateRequired = false
+            if (field != value && running) updateRequired = true
+            field = value
+
+            if (updateRequired) updatePresence()
+        }
+
+    var afk = false
+        set (value) {
+            var updateRequired = false
+            if (field != value && running) updateRequired = true
+            field = value
+
+            if (updateRequired) updatePresence()
+        }
+
+    var since: Int? = null
+        set (value) {
+            var updateRequired = false
+            if (field != value && running) updateRequired = true
+            field = value
+
+            if (updateRequired) updatePresence()
+        }
+
     init {
         DebugLogger.enabled = debug
     }
@@ -45,6 +79,7 @@ class DiscordBot(debug: Boolean) {
         commandMap[name] = commandNode
     }
 
+    private lateinit var client: WebSocketClient
     private var running: Boolean = false
     fun run(commandOptionMaxDepth: Int = 16, heartbeatTimeScale: Double = 0.95) {
         val commands = RequestUtil.get("applications/${id}/commands", token, "with_localizations" to true)
@@ -99,8 +134,8 @@ class DiscordBot(debug: Boolean) {
                 delay(gatewayBot.sessionStartLimit.resetAfter)
             }
 
-            val webSocketClient = WebSocketClient.newInstance(gatewayBot.url, version = DiscordConstants.apiVersion)
-            webSocketClient.launch client@{ messages ->
+            client = WebSocketClient.newInstance(gatewayBot.url, version = DiscordConstants.apiVersion)
+            client.launch client@{ messages ->
                 val currentTime = Clock.System.now().toEpochMilliseconds()
 
                 messages.forEach { message ->
@@ -127,24 +162,33 @@ class DiscordBot(debug: Boolean) {
                             heartbeatInterval = (event.d as Hello).heartbeatInterval * heartbeatTimeScale
                             latestHeartbeat = currentTime
 
-                            sendHeartbeat(this, null)
-                            send(Identify(token, largeThreshold = 50, intent = intent))
+                            sendHeartbeat(null)
+                            send(Identify(token, largeThreshold = 50, intent = intent, presence = DiscordPresence(
+                                null, arrayOf(), status, afk
+                            )))
 
                             prepared = true
                         }
 
                         DiscordConstants.OpCode.RECONNECT -> this.close(1001)
                         DiscordConstants.OpCode.HEARTBEAT -> {
-                            sendHeartbeat(this, seqNum)
+                            sendHeartbeat(seqNum)
                             latestHeartbeat = currentTime
                         }
                     }
                 }
 
                 if (prepared && currentTime - latestHeartbeat >= heartbeatInterval) {
-                    sendHeartbeat(this, seqNum)
+                    sendHeartbeat(seqNum)
                     DebugLogger.log("Heartbeat Sent: Time: ${currentTime}, Delay: ${currentTime - latestHeartbeat}")
                     latestHeartbeat = currentTime
+                }
+
+                if (closeCode != null) {
+                    if (closeCode!!.first != null) this.close(closeCode!!.first!!, closeCode!!.second)
+                    else this.close(closeCode!!.second)
+
+                    DebugLogger.log("Bot Stop Code: $closeCode")
                 }
             }
 
@@ -157,10 +201,23 @@ class DiscordBot(debug: Boolean) {
         while (running) { delay(10) }
     }
 
+    private var closeCode: Pair<String?, Short>? = null
+    private fun close(code: Short) {
+
+    }
+    fun stop() { this.close(1001) }
+
     private var prepared = false
     private var heartbeatInterval = 45000.0
     private var latestHeartbeat = -1L
-    private fun sendHeartbeat(client: WebSocketClient, seqNum: Int?) {
+
+    private fun sendHeartbeat(seqNum: Int?) {
         client.send(GatewayEvent(1, d = Heartbeat(seqNum)), GatewayEvent.Serializer)
+    }
+
+    private fun updatePresence() {
+        client.send(GatewayEvent(3, d = DiscordPresence(
+            since = since, activities = arrayOf(), status = status, afk = afk
+        )))
     }
 }
