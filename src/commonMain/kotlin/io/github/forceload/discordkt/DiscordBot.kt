@@ -147,7 +147,7 @@ class DiscordBot(debug: Boolean) {
                             return@forEach
                         }
                     } catch (err: Throwable) { // INTERNAL_ERROR
-                        this.close("${err::class.qualifiedName}: ${err.message}" ?: "Unknown error", 1001)
+                        this.close("${err::class.qualifiedName}: ${err.message ?: "Unknown error"}", 1001)
 
                         WarnLogger.log(err.stackTraceToString())
                         WarnLogger.log("The bot will be shut down in a few seconds...")
@@ -170,7 +170,7 @@ class DiscordBot(debug: Boolean) {
                             prepared = true
                         }
 
-                        DiscordConstants.OpCode.RECONNECT -> this.close(1001)
+                        DiscordConstants.OpCode.RECONNECT -> this.close(1000)
                         DiscordConstants.OpCode.HEARTBEAT -> {
                             sendHeartbeat(seqNum)
                             latestHeartbeat = currentTime
@@ -202,10 +202,9 @@ class DiscordBot(debug: Boolean) {
     }
 
     private var closeCode: Pair<String?, Short>? = null
-    private fun close(code: Short) {
 
-    }
-    fun stop() { this.close(1001) }
+    private fun close(code: Short) { this.closeCode = Pair(null, code) }
+    fun stop() { this.close(1000) }
 
     private var prepared = false
     private var heartbeatInterval = 45000.0

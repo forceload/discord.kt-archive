@@ -7,8 +7,25 @@ plugins {
 group = "io.github.forceload"
 version = "1.0-SNAPSHOT"
 
+val packageName = group
+
 repositories {
     mavenCentral()
+}
+
+tasks.register<Jar>("botJar") {
+    doFirst {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        val main by kotlin.jvm().compilations.getting
+
+        manifest {
+            attributes("Main-Class" to "$packageName.discordkt.TestBotKt")
+        }
+
+        from({
+            main.runtimeDependencyFiles.files.filter { it.name.endsWith("jar") }.map { zipTree(it) }
+        })
+    }
 }
 
 kotlin {
@@ -16,6 +33,7 @@ kotlin {
         compilations.all {
             kotlinOptions.jvmTarget = "17"
         }
+
         withJava()
         testRuns["test"].executionTask.configure {
             useJUnitPlatform()

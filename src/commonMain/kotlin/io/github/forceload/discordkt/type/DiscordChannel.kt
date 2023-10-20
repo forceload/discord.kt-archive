@@ -1,6 +1,6 @@
 package io.github.forceload.discordkt.type
 
-import io.github.forceload.discordkt.channel.DiscordChannelType
+import io.github.forceload.discordkt.type.channel.DiscordChannelType
 import io.github.forceload.discordkt.util.SerializerExtension.arraySerializer
 import io.github.forceload.discordkt.util.SerializerExtension.decodeNullableString
 import io.github.forceload.discordkt.util.SerializerUtil.makeStructure
@@ -440,7 +440,47 @@ class DiscordChannel(
 
         override fun serialize(encoder: Encoder, value: DiscordChannel) {
             encoder.beginStructure(descriptor).run {
-                TODO("분량 ㅁㅊ")
+                encodeStringElement(descriptor, 0, value.id)
+                encodeSerializableElement(descriptor, 1, DiscordChannelType.Serializer, value.type)
+                value.guildID?.let { encodeStringElement(descriptor, 2, value.guildID) }
+                value.position?.let { encodeIntElement(descriptor, 3, value.position) }
+                if (value.permissionOverwrites.isNotEmpty())
+                    encodeSerializableElement(descriptor, 4, PermissionOverwrite.Serializer.arraySerializer(), value.permissionOverwrites)
+                value.name?.let { encodeStringElement(descriptor, 5, value.name) }
+                value.topic?.let { encodeStringElement(descriptor, 6, value.topic) }
+                value.nsfw?.let { encodeBooleanElement(descriptor, 7, value.nsfw) }
+                value.lastMessageID?.let { encodeStringElement(descriptor, 8, value.lastMessageID) }
+                value.bitrate?.let { encodeIntElement(descriptor, 9, value.bitrate) }
+                value.userLimit?.let { encodeIntElement(descriptor, 10, value.userLimit) }
+                value.rateLimitPerUser?.let { encodeIntElement(descriptor, 11, value.rateLimitPerUser) }
+                if (!value.recipients.isNullOrEmpty())
+                    encodeSerializableElement(descriptor, 12, DiscordUser.Serializer.arraySerializer(), value.recipients)
+                value.icon?.let { encodeStringElement(descriptor, 13, value.icon) }
+                value.ownerID?.let { encodeStringElement(descriptor, 14, value.ownerID) }
+                value.appID?.let { encodeStringElement(descriptor, 15, value.appID) }
+                value.managed?.let { encodeBooleanElement(descriptor, 16, value.managed) }
+                value.parentID?.let { encodeStringElement(descriptor, 17, value.parentID) }
+                value.lastPinTimestamp?.let { encodeSerializableElement(descriptor, 18, InstantIso8601Serializer, value.lastPinTimestamp) }
+                value.rtcRegion?.let { encodeStringElement(descriptor, 19, value.rtcRegion) }
+                value.videoQualityMode?.let { encodeSerializableElement(descriptor, 20, VideoQualityMode.Serializer, value.videoQualityMode) }
+                value.messageCount?.let { encodeIntElement(descriptor, 21, value.messageCount) }
+                value.memberCount?.let { encodeIntElement(descriptor, 22, value.memberCount) }
+                value.threadMetadata?.let { encodeSerializableElement(descriptor, 23, ThreadMetadata.Serializer, value.threadMetadata) }
+                value.member?.let { encodeSerializableElement(descriptor, 24, ThreadMember.Serializer, value.member) }
+                value.defaultAutoArchiveDuration?.let { encodeIntElement(descriptor, 25, value.defaultAutoArchiveDuration) }
+                if (value.permissions.isNotEmpty())
+                    encodeSerializableElement(descriptor, 26, DiscordPermission.SetSerializer, value.permissions)
+                if (!value.flags.isNullOrEmpty())
+                    encodeSerializableElement(descriptor, 27, ChannelFlags.SetSerializer, value.flags)
+                value.totalMessageSent?.let { encodeIntElement(descriptor, 28, value.totalMessageSent) }
+                value.availableTags?.let { encodeSerializableElement(descriptor, 29, ForumTag.serializer().arraySerializer(), value.availableTags) }
+                value.appliedTags?.let { encodeSerializableElement(descriptor, 30, String.serializer().arraySerializer(), value.appliedTags) }
+                value.defaultReactionEmoji?.let { encodeSerializableElement(descriptor, 31, DefaultReaction.serializer(), value.defaultReactionEmoji) }
+                value.defaultThreadRateLimitPerUser?.let { encodeIntElement(descriptor, 32, value.defaultThreadRateLimitPerUser) }
+                value.defaultSortOrder?.let { encodeSerializableElement(descriptor, 33, SortOrderType.Serializer, value.defaultSortOrder) }
+                value.defaultForumLayout?.let { encodeSerializableElement(descriptor, 34, ForumLayoutType.Serializer, value.defaultForumLayout) }
+
+                endStructure(descriptor)
             }
         }
     }

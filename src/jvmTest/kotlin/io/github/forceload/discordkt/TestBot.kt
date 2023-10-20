@@ -37,7 +37,9 @@ suspend fun main() {
         }
 
         command("shutdown") {
-            this@bot.stop()
+            execute {
+                this@bot.stop()
+            }
         }
     }.runBlocking()
 }

@@ -1,6 +1,9 @@
 package io.github.forceload.discordkt.type.gateway.event.dispatch
 
 import io.github.forceload.discordkt.type.DiscordChannel
+import io.github.forceload.discordkt.type.DiscordUser
+import io.github.forceload.discordkt.type.GuildMember
+import io.github.forceload.discordkt.type.channel.DiscordMessage
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -35,7 +38,10 @@ open class InteractionData
 @Serializable(with = DiscordInteraction.Serializer::class)
 class DiscordInteraction(
     val id: String, val appID: String, val type: InteractionType,
-    val data: InteractionData, val guildID: String, val channel: DiscordChannel
+    val data: InteractionData?, val guildID: String, val channel: DiscordChannel?,
+    val channelID: String?, val member: GuildMember?, val user: DiscordUser?,
+    val token: String, val version: Int, val message: DiscordMessage
+
 ): DispatchEventType() {
 
     object Serializer: KSerializer<DiscordInteraction> {
