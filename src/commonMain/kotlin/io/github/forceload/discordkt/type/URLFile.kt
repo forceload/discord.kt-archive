@@ -1,6 +1,5 @@
 package io.github.forceload.discordkt.type
 
-class URLFile(url: String) {
-    companion object {
-    }
+data class URLFile(val url: String, val proxyURL: String? = null) {
+    companion object
 }

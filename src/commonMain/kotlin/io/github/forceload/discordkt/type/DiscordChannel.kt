@@ -1,6 +1,7 @@
 package io.github.forceload.discordkt.type
 
 import io.github.forceload.discordkt.type.channel.DiscordChannelType
+import io.github.forceload.discordkt.type.guilds.GuildMember
 import io.github.forceload.discordkt.util.SerializerExtension.arraySerializer
 import io.github.forceload.discordkt.util.SerializerExtension.decodeNullableString
 import io.github.forceload.discordkt.util.SerializerUtil.makeStructure
@@ -280,7 +281,8 @@ enum class ChannelFlags(val id: Int) {
 /**
  * https://discord.com/developers/docs/resources/channel#channel-object
  */
-class DiscordChannel(
+@Serializable(with = DiscordChannel.Serializer::class)
+data class DiscordChannel(
     val id: String, val type: DiscordChannelType, val guildID: String? = null,
     val position: Int? = null, val permissionOverwrites: Array<PermissionOverwrite>,
     val name: String? = null, val topic: String? = null, val nsfw: Boolean? = null,

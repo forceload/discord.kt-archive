@@ -4,6 +4,7 @@ import io.github.forceload.discordkt.command.internal.DiscordCommand.Application
 import io.github.forceload.discordkt.command.internal.type.ValueType
 import io.github.forceload.discordkt.exception.InvalidArgumentTypeException
 import io.github.forceload.discordkt.type.*
+import io.github.forceload.discordkt.type.commands.DiscordAttachment
 import io.github.forceload.discordkt.util.CollectionUtil.add
 import io.github.forceload.discordkt.util.DiscordConstants
 import kotlin.jvm.JvmName

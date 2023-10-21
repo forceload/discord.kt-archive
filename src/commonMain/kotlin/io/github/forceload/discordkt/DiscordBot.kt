@@ -15,6 +15,9 @@ import io.github.forceload.discordkt.type.gateway.PresenceStatus
 import io.github.forceload.discordkt.type.gateway.event.Heartbeat
 import io.github.forceload.discordkt.type.gateway.event.Hello
 import io.github.forceload.discordkt.type.gateway.event.Identify
+import io.github.forceload.discordkt.type.gateway.event.dispatch.DiscordInteraction
+import io.github.forceload.discordkt.type.gateway.event.dispatch.InteractionType
+import io.github.forceload.discordkt.type.gateway.event.dispatch.interaction.ApplicationCommandData
 import io.github.forceload.discordkt.util.CoroutineUtil
 import io.github.forceload.discordkt.util.CoroutineUtil.delay
 import io.github.forceload.discordkt.util.DiscordConstants
@@ -32,6 +35,10 @@ class DiscordBot(debug: Boolean) {
     lateinit var id: String
     lateinit var token: String
     val intent = mutableSetOf<GatewayIntent>()
+
+    companion object {
+        val availableInstances = ArrayList<DiscordBot>()
+    }
 
     /**
      * Presence Variables
@@ -85,6 +92,8 @@ class DiscordBot(debug: Boolean) {
         val commands = RequestUtil.get("applications/${id}/commands", token, "with_localizations" to true)
         SerializerUtil.commandOptionMaxDepth = commandOptionMaxDepth
 
+        availableInstances.add(this)
+
         DebugLogger.log(commands.dropLast(1))
         val commandList = SerializerUtil.jsonBuild.decodeFromString<ArrayList<DiscordCommand>>(commands)
 
@@ -109,7 +118,7 @@ class DiscordBot(debug: Boolean) {
             }
         }
 
-        val newCommands = commandMap.keys
+        val newCommands = commandMap.keys.toMutableList()
         newCommands.removeAll(commandList.map { it.name }.toSet())
         for (command in newCommands) {
             val generated = commandMap[command]!!.generateCommand()
@@ -175,6 +184,21 @@ class DiscordBot(debug: Boolean) {
                             sendHeartbeat(seqNum)
                             latestHeartbeat = currentTime
                         }
+
+                        DiscordConstants.OpCode.DISPATCH -> when (event.t) {
+                            "INTERACTION_CREATE" -> {
+                                val interaction = event.d as DiscordInteraction
+
+                                when (interaction.type) {
+                                    InteractionType.APPLICATION_COMMAND -> {
+                                        val commandData = interaction.data as ApplicationCommandData
+                                        commandMap[commandData.name]?.run(interaction)
+                                    }
+
+                                    else -> {}
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -192,6 +216,7 @@ class DiscordBot(debug: Boolean) {
                 }
             }
 
+            availableInstances.remove(this@DiscordBot)
             running = false
         }
     }

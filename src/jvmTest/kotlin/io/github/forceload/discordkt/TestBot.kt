@@ -15,7 +15,7 @@ suspend fun main() {
         command("direct_message") {
             arguments(
                 ("message" desc "Message to Send" to String.require prop {
-                    addChoice("Hello", "Hello").local(DiscordLocale.ko_KR to "인삿말")
+                    addChoice("Hello", "안녕하세요!").local(DiscordLocale.ko_KR to "인삿말")
                 }).localDescription(DiscordLocale.ko_KR to "보낼 메시지")
                     .localName(DiscordLocale.ko_KR to "메시지")
             )
@@ -34,6 +34,9 @@ suspend fun main() {
             )
 
             description = ""
+            execute {
+                println((arguments["attachment"] as URLFile).url)
+            }
         }
 
         command("shutdown") {

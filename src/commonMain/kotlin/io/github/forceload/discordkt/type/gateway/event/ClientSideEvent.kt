@@ -1,4 +1,3 @@
 package io.github.forceload.discordkt.type.gateway.event
 
-interface ClientSideEvent {
-}
+interface ClientSideEvent

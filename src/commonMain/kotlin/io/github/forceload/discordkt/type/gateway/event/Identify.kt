@@ -58,7 +58,6 @@ class Identify(
             return Identify(token!!, properties!!, largeThreshold!!, presence, intent!!.toMutableSet())
         }
 
-        @OptIn(ExperimentalSerializationApi::class)
         override fun serialize(encoder: Encoder, value: Identify) {
             encoder.beginStructure(descriptor).run {
                 encodeStringElement(descriptor, 0, value.token)
