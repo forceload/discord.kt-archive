@@ -10,7 +10,7 @@ import kotlinx.serialization.encoding.Encoder
 /**
  * https://discord.com/developers/docs/topics/permissions#permissions-bitwise-permission-flags
  */
-@Suppress("unused")
+
 enum class DiscordPermission(val id: Long) {
     CREATE_INSTANT_INVITE(1L shl 0),
     KICK_MEMBERS(1L shl 1),

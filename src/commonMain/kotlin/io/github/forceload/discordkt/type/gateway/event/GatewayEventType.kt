@@ -31,5 +31,6 @@ abstract class GatewayEventType {
         }
     }
 
+    internal open var auth: String? = null
     abstract val opCode: Int
 }

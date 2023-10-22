@@ -1,5 +1,6 @@
 package io.github.forceload.discordkt.type
 
+import io.github.forceload.discordkt.network.RequestUtil
 import io.github.forceload.discordkt.type.channel.DiscordChannelType
 import io.github.forceload.discordkt.type.guilds.GuildMember
 import io.github.forceload.discordkt.util.SerializerExtension.arraySerializer
@@ -297,6 +298,98 @@ data class DiscordChannel(
     val defaultReactionEmoji: DefaultReaction? = null, val defaultThreadRateLimitPerUser: Int? = null,
     val defaultSortOrder: SortOrderType? = null, val defaultForumLayout: ForumLayoutType? = ForumLayoutType.NOT_SET
 ) {
+    fun sendMessage(text: String, token: String) =
+        RequestUtil.post("channels/$id/messages", token, "{\"content\": \"$text\"}")
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is DiscordChannel) return false
+
+        if (id != other.id) return false
+        if (type != other.type) return false
+        if (guildID != other.guildID) return false
+        if (position != other.position) return false
+        if (!permissionOverwrites.contentEquals(other.permissionOverwrites)) return false
+        if (name != other.name) return false
+        if (topic != other.topic) return false
+        if (nsfw != other.nsfw) return false
+        if (lastMessageID != other.lastMessageID) return false
+        if (bitrate != other.bitrate) return false
+        if (userLimit != other.userLimit) return false
+        if (rateLimitPerUser != other.rateLimitPerUser) return false
+        if (recipients != null) {
+            if (other.recipients == null) return false
+            if (!recipients.contentEquals(other.recipients)) return false
+        } else if (other.recipients != null) return false
+        if (icon != other.icon) return false
+        if (ownerID != other.ownerID) return false
+        if (appID != other.appID) return false
+        if (managed != other.managed) return false
+        if (parentID != other.parentID) return false
+        if (lastPinTimestamp != other.lastPinTimestamp) return false
+        if (rtcRegion != other.rtcRegion) return false
+        if (videoQualityMode != other.videoQualityMode) return false
+        if (messageCount != other.messageCount) return false
+        if (memberCount != other.memberCount) return false
+        if (threadMetadata != other.threadMetadata) return false
+        if (member != other.member) return false
+        if (defaultAutoArchiveDuration != other.defaultAutoArchiveDuration) return false
+        if (permissions != other.permissions) return false
+        if (flags != other.flags) return false
+        if (totalMessageSent != other.totalMessageSent) return false
+        if (availableTags != null) {
+            if (other.availableTags == null) return false
+            if (!availableTags.contentEquals(other.availableTags)) return false
+        } else if (other.availableTags != null) return false
+        if (appliedTags != null) {
+            if (other.appliedTags == null) return false
+            if (!appliedTags.contentEquals(other.appliedTags)) return false
+        } else if (other.appliedTags != null) return false
+        if (defaultReactionEmoji != other.defaultReactionEmoji) return false
+        if (defaultThreadRateLimitPerUser != other.defaultThreadRateLimitPerUser) return false
+        if (defaultSortOrder != other.defaultSortOrder) return false
+        return defaultForumLayout == other.defaultForumLayout
+    }
+
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + type.hashCode()
+        result = 31 * result + (guildID?.hashCode() ?: 0)
+        result = 31 * result + (position ?: 0)
+        result = 31 * result + permissionOverwrites.contentHashCode()
+        result = 31 * result + (name?.hashCode() ?: 0)
+        result = 31 * result + (topic?.hashCode() ?: 0)
+        result = 31 * result + (nsfw?.hashCode() ?: 0)
+        result = 31 * result + (lastMessageID?.hashCode() ?: 0)
+        result = 31 * result + (bitrate ?: 0)
+        result = 31 * result + (userLimit ?: 0)
+        result = 31 * result + (rateLimitPerUser ?: 0)
+        result = 31 * result + (recipients?.contentHashCode() ?: 0)
+        result = 31 * result + (icon?.hashCode() ?: 0)
+        result = 31 * result + (ownerID?.hashCode() ?: 0)
+        result = 31 * result + (appID?.hashCode() ?: 0)
+        result = 31 * result + (managed?.hashCode() ?: 0)
+        result = 31 * result + (parentID?.hashCode() ?: 0)
+        result = 31 * result + (lastPinTimestamp?.hashCode() ?: 0)
+        result = 31 * result + (rtcRegion?.hashCode() ?: 0)
+        result = 31 * result + (videoQualityMode?.hashCode() ?: 0)
+        result = 31 * result + (messageCount ?: 0)
+        result = 31 * result + (memberCount ?: 0)
+        result = 31 * result + (threadMetadata?.hashCode() ?: 0)
+        result = 31 * result + (member?.hashCode() ?: 0)
+        result = 31 * result + (defaultAutoArchiveDuration ?: 0)
+        result = 31 * result + permissions.hashCode()
+        result = 31 * result + (flags?.hashCode() ?: 0)
+        result = 31 * result + (totalMessageSent ?: 0)
+        result = 31 * result + (availableTags?.contentHashCode() ?: 0)
+        result = 31 * result + (appliedTags?.contentHashCode() ?: 0)
+        result = 31 * result + (defaultReactionEmoji?.hashCode() ?: 0)
+        result = 31 * result + (defaultThreadRateLimitPerUser ?: 0)
+        result = 31 * result + (defaultSortOrder?.hashCode() ?: 0)
+        result = 31 * result + (defaultForumLayout?.hashCode() ?: 0)
+        return result
+    }
+
     object Serializer: KSerializer<DiscordChannel> {
         override val descriptor: SerialDescriptor =
             buildClassSerialDescriptor("DiscordChannel") {

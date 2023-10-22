@@ -70,7 +70,6 @@ data class DiscordInteraction(
     val appPermissions: Set<DiscordPermission>, val locale: DiscordLocale?,
     val guildLocale: DiscordLocale?, val entitlements: Array<Entitlement>
 ): DispatchEventType() {
-
     object Serializer: KSerializer<DiscordInteraction> {
         override val descriptor: SerialDescriptor =
             buildClassSerialDescriptor("DiscordInteraction") {

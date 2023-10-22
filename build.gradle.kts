@@ -2,10 +2,11 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlinx.serialization)
+    id("maven-publish")
 }
 
 group = "io.github.forceload"
-version = "1.0-SNAPSHOT"
+version = "0.0.1"
 
 val packageName = group
 
@@ -13,25 +14,30 @@ repositories {
     mavenCentral()
 }
 
-tasks.register<Jar>("botJar") {
-    doFirst {
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-        val main by kotlin.jvm().compilations.getting
-
-        manifest {
-            attributes("Main-Class" to "$packageName.discordkt.TestBotKt")
-        }
-
-        from({
-            main.runtimeDependencyFiles.files.filter { it.name.endsWith("jar") }.map { zipTree(it) }
-        })
-    }
-}
-
 kotlin {
     jvm {
-        compilations.all {
-            kotlinOptions.jvmTarget = "17"
+        compilations {
+            all { kotlinOptions.jvmTarget = "17" }
+            val test = getByName("test")
+
+            tasks.register<Jar>("botJar") {
+                doFirst {
+                    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+                    val main by kotlin.jvm().compilations.getting
+
+                    manifest {
+                        attributes("Main-Class" to "$packageName.discordkt.TestBot")
+                    }
+
+                    // main.compileDependencyFiles,
+                    from(
+                        main.output.classesDirs, test.output,
+                        main.runtimeDependencyFiles.files.filter { it.name.endsWith("jar") }.map { zipTree(it) }
+                    )
+                }
+
+                outputs.upToDateWhen { false }
+            }
         }
 
         withJava()
@@ -65,11 +71,12 @@ kotlin {
 
         val commonMain by getting {
             dependencies {
-                implementation(libs.ktor.client.cio)
                 implementation(libs.ktor.client.core)
 
                 implementation(libs.kotlinx.datetime)
                 implementation(libs.kotlinx.serialization.json)
+
+                implementation(kotlin("stdlib-common"))
             }
         }
 
@@ -80,11 +87,20 @@ kotlin {
             }
         }
 
-        val jvmMain by getting
+        val jvmMain by getting {
+            dependencies {
+                implementation(libs.ktor.client.cio)
+            }
+        }
+
         val jvmTest by getting
         // val jsMain by getting
         // val jsTest by getting
-        val nativeMain by getting
+        val nativeMain by getting {
+            dependencies {
+                implementation(libs.ktor.client.curl)
+            }
+        }
         val nativeTest by getting
     }
 }

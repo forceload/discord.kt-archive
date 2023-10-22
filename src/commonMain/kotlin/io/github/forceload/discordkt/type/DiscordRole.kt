@@ -71,7 +71,7 @@ class RoleTags(
     }
 }
 
-@Suppress("unused")
+
 enum class RoleFlags(val id: Int) {
     IN_PROMPT(1 shl 0);
 

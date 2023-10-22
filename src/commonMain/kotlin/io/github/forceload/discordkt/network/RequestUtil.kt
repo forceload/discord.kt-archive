@@ -3,13 +3,17 @@ package io.github.forceload.discordkt.network
 import io.github.forceload.discordkt.util.DiscordConstants
 import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
 
+expect object ClientContainer {
+    val client: HttpClient
+    val platform: String
+}
+
 object RequestUtil {
-    private val client = HttpClient(CIO)
+    private val client: HttpClient = ClientContainer.client
 
     fun get(url: String, authorization: String, vararg params: Pair<String, Any>) =
         runBlocking {
@@ -52,9 +56,8 @@ object RequestUtil {
             }.body<String>()
         }
 
-    fun delete(url: String, authorization: String) =
+    fun delete(url: String, authorization: String): String =
         runBlocking {
-            println(url)
             client.delete {
                 url {
                     protocol = URLProtocol.HTTPS

@@ -4,7 +4,7 @@ import io.github.forceload.discordkt.command.internal.DiscordCommand.Application
 import io.github.forceload.discordkt.command.internal.type.ValueType
 import io.github.forceload.discordkt.exception.InvalidArgumentTypeException
 import io.github.forceload.discordkt.type.*
-import io.github.forceload.discordkt.type.commands.DiscordAttachment
+import io.github.forceload.discordkt.type.commands.DiscordAttachmentType
 import io.github.forceload.discordkt.util.CollectionUtil.add
 import io.github.forceload.discordkt.util.DiscordConstants
 import kotlin.jvm.JvmName
@@ -33,8 +33,8 @@ data class Argument(
             is Int -> DiscordInteger(false)
             is Int.Companion -> DiscordInteger(false)
 
-            is URLFile -> DiscordAttachment(false)
-            is URLFile.Companion -> DiscordAttachment(false)
+            is URLFile -> DiscordAttachmentType(false)
+            is URLFile.Companion -> DiscordAttachmentType(false)
 
             is ArgumentType<*> -> type
             else -> try { throw InvalidArgumentTypeException(type!!::class.simpleName) }

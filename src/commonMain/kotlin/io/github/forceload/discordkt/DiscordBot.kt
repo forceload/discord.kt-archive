@@ -78,7 +78,7 @@ class DiscordBot(debug: Boolean) {
 
     private val commandMap = HashMap<String, CommandNode>()
     fun command(name: String, code: CommandNode.() -> Unit) {
-        val commandNode = CommandNode(name).also(code)
+        val commandNode = CommandNode(name, token).also(code)
         if (name in commandMap.keys) {
             throw CommandAlreadyExistsException(name)
         }
@@ -150,8 +150,10 @@ class DiscordBot(debug: Boolean) {
                 messages.forEach { message ->
                     val event: GatewayEvent
                     try {
-                        try { event = SerializerUtil.jsonBuild.decodeFromString<GatewayEvent>(message) }
-                        catch (err: GatewaySerializationFailException) {
+                        try {
+                            event = SerializerUtil.jsonBuild.decodeFromString<GatewayEvent>(message)
+                            event.auth = token
+                        } catch (err: GatewaySerializationFailException) {
                             WarnLogger.log(err.stackTraceToString())
                             return@forEach
                         }
@@ -228,8 +230,8 @@ class DiscordBot(debug: Boolean) {
 
     private var closeCode: Pair<String?, Short>? = null
 
-    private fun close(code: Short) { this.closeCode = Pair(null, code) }
-    fun stop() { this.close(1000) }
+    private fun close(code: Short, message: String? = null) { this.closeCode = Pair(message, code) }
+    fun stop(message: String? = null) = this.close(1000, message)
 
     private var prepared = false
     private var heartbeatInterval = 45000.0

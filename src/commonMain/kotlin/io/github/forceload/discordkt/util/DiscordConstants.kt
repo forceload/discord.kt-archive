@@ -1,10 +1,15 @@
 package io.github.forceload.discordkt.util
 
+
 object DiscordConstants {
     const val defaultDescription = "Default Description"
     const val maxConnections = 16
 
     const val apiVersion = 10
+
+    object Caches {
+        const val DM_CACHE_ALIVE = 10 * TimeConstants.MINUTE_IN_SECONDS * 1000
+    }
 
     object OpCode {
         const val DISPATCH = 0

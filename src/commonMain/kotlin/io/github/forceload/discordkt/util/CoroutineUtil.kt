@@ -9,5 +9,6 @@ object CoroutineUtil {
     val webSocketDispatcher = Dispatchers.IO.limitedParallelism(maxWebSocket)
     val webSocketScope = CoroutineScope(webSocketDispatcher)
 
+    @Suppress("UnusedReceiverParameter")
     suspend fun CoroutineScope.delay(timeMillis: Int) = delay(timeMillis.toLong())
 }

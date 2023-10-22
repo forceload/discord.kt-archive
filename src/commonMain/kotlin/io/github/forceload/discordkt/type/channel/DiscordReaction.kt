@@ -59,8 +59,7 @@ class DiscordEmoji(
                 }
             }
 
-            val result = DiscordEmoji(id, name, roles, user, requireColons, managed, animated, available)
-            return result
+            return DiscordEmoji(id, name, roles, user, requireColons, managed, animated, available)
         }
 
         override fun serialize(encoder: Encoder, value: DiscordEmoji) {

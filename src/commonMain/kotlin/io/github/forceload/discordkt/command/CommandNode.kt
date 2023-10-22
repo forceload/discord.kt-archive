@@ -8,20 +8,28 @@ import io.github.forceload.discordkt.exception.InvalidArgumentTypeException
 import io.github.forceload.discordkt.type.DiscordInteger
 import io.github.forceload.discordkt.type.DiscordString
 import io.github.forceload.discordkt.type.URLFile
-import io.github.forceload.discordkt.type.commands.DiscordAttachment
+import io.github.forceload.discordkt.type.commands.DiscordAttachmentType
 import io.github.forceload.discordkt.type.gateway.event.dispatch.DiscordInteraction
+import io.github.forceload.discordkt.type.gateway.event.dispatch.InteractionCallbackType
 import io.github.forceload.discordkt.type.gateway.event.dispatch.interaction.ApplicationCommandData
+import io.github.forceload.discordkt.type.gateway.event.dispatch.interaction.callback.InteractionMessageCallback
 import io.github.forceload.discordkt.util.DiscordConstants
 import io.github.forceload.discordkt.util.logger.DebugLogger
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonPrimitive
 
-class CommandNode(var name: String) {
+class CommandNode(var name: String, private val token: String) {
     var description: String = DiscordConstants.defaultDescription
         set(value) { field = value.ifEmpty { DiscordConstants.defaultDescription } }
 
     private var codes = ArrayList<CommandContext.() -> Unit>()
     private val argumentMap = HashMap<String, Pair<Argument, ArgumentType<*>>>()
+
+    @Suppress("PropertyName")
+    val Attachment = URLFile
 
     fun arguments(vararg args: Pair<Any, Any>) {
         for (argument in args) {
@@ -45,6 +53,7 @@ class CommandNode(var name: String) {
         codes.add(reaction)
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     fun run(interaction: DiscordInteraction) {
         val arguments = HashMap<String, Any>()
         interaction.data as ApplicationCommandData
@@ -63,10 +72,16 @@ class CommandNode(var name: String) {
             }
         }
 
-        DebugLogger.log(arguments)
+        if (arguments.isNotEmpty()) DebugLogger.log(arguments)
 
-        val context = CommandContext(arguments, interaction.channel, interaction.message)
-        for (code in codes) { code(context) }
+        val context = CommandContext(arguments, interaction, token)
+        GlobalScope.launch {
+            for (code in codes) { code(context) }
+            if (context.reactionTimestamp == -1L && context.autoResponse) context.response(
+                InteractionCallbackType.CHANNEL_MESSAGE_WITH_SOURCE,
+                InteractionMessageCallback(content = "")
+            )
+        }
     }
 
     fun generateCommand(): DiscordCommand {
@@ -77,7 +92,7 @@ class CommandNode(var name: String) {
                 when (argument.second) {
                     is DiscordString -> ApplicationCommandOptionType.STRING
                     is DiscordInteger -> ApplicationCommandOptionType.INTEGER
-                    is DiscordAttachment -> ApplicationCommandOptionType.ATTACHMENT
+                    is DiscordAttachmentType -> ApplicationCommandOptionType.ATTACHMENT
                     else -> throw InvalidArgumentTypeException("Argument Type is Invalid")
                 },
                 entry.key, argument.first.description, argument.second.required
@@ -90,7 +105,6 @@ class CommandNode(var name: String) {
             result.options.add(option)
         }
 
-        // DebugLogger.log(result)
         return result
     }
 }

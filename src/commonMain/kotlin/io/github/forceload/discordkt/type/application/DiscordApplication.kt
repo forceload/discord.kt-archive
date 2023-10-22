@@ -38,7 +38,7 @@ enum class MembershipState(val id: Int) {
     }
 }
 
-@Suppress("unused")
+
 enum class ApplicationFlags(val id: Int) {
     APPLICATION_AUTO_MODERATION_RULE_CREATE_BADGE(1 shl 6),
     GATEWAY_PRESENCE(1 shl 12), GATEWAY_PRESENCE_LIMITED(1 shl 13),
