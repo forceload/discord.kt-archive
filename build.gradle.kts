@@ -26,10 +26,9 @@ kotlin {
                     val main by kotlin.jvm().compilations.getting
 
                     manifest {
-                        attributes("Main-Class" to "$packageName.discordkt.TestBot")
+                        attributes("Main-Class" to "$packageName.discordkt.TestBotKt")
                     }
 
-                    // main.compileDependencyFiles,
                     from(
                         main.output.classesDirs, test.output,
                         main.runtimeDependencyFiles.files.filter { it.name.endsWith("jar") }.map { zipTree(it) }
