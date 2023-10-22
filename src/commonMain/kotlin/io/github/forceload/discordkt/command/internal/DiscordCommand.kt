@@ -1,6 +1,5 @@
 package io.github.forceload.discordkt.command.internal
 
-import io.github.forceload.discordkt.type.channel.DiscordChannelType
 import io.github.forceload.discordkt.command.internal.type.ApplicationCommandOptionType
 import io.github.forceload.discordkt.command.internal.type.ApplicationCommandType
 import io.github.forceload.discordkt.command.internal.type.ValueType
@@ -8,10 +7,11 @@ import io.github.forceload.discordkt.network.RequestUtil
 import io.github.forceload.discordkt.type.DiscordLocale
 import io.github.forceload.discordkt.type.DiscordPermission
 import io.github.forceload.discordkt.type.LocalizationMap
-import io.github.forceload.discordkt.util.logger.DebugLogger
+import io.github.forceload.discordkt.type.channel.DiscordChannelType
 import io.github.forceload.discordkt.util.SerializerExtension.encodeNumberElement
 import io.github.forceload.discordkt.util.SerializerExtension.listSerializer
 import io.github.forceload.discordkt.util.SerializerUtil
+import io.github.forceload.discordkt.util.logger.DebugLogger
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable

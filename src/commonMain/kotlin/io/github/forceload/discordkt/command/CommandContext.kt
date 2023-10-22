@@ -12,7 +12,6 @@ import io.github.forceload.discordkt.type.gateway.event.dispatch.InteractionCall
 import io.github.forceload.discordkt.type.gateway.event.dispatch.InteractionResponse
 import io.github.forceload.discordkt.type.gateway.event.dispatch.interaction.callback.InteractionMessageCallback
 import io.github.forceload.discordkt.util.SerializerUtil
-import io.github.forceload.discordkt.util.logger.DebugLogger
 import kotlinx.datetime.Clock
 import kotlinx.serialization.encodeToString
 
@@ -43,7 +42,7 @@ class CommandContext(
         reactionTimestamp = Clock.System.now().toEpochMilliseconds()
         val message = SerializerUtil.jsonBuild.encodeToString<InteractionResponse>(interactionResponse)
 
-        DebugLogger.log(RequestUtil.post(interactionCallback, token, message))
+        RequestUtil.post(interactionCallback, token, message)
     }
 
     fun response(type: InteractionCallbackType, data: InteractionCallbackData? = null) =

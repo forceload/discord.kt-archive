@@ -13,7 +13,7 @@ import kotlinx.serialization.encoding.Encoder
 /**
  * https://discord.com/developers/docs/reference#locales
  */
-@Suppress("EnumEntryName")
+@Suppress("EnumEntryName", "UNUSED_PARAMETER")
 @Serializable(with = DiscordLocale.Serializer::class)
 enum class DiscordLocale(val localeID: String, name: String) {
     id_ID("id", "Indonesian"),
