@@ -4,7 +4,6 @@ import io.github.forceload.discordkt.type.DiscordUser
 import io.github.forceload.discordkt.type.guilds.UnavailableGuild
 import io.github.forceload.discordkt.util.SerializerExtension.arraySerializer
 import io.github.forceload.discordkt.util.SerializerUtil.makeStructure
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
@@ -32,10 +31,9 @@ class Ready(
                 element<String>("session_id")
                 element<String>("resume_gateway_url")
                 element<Array<Int>>("shard", isOptional = true)
-                element<JsonObject>("application") // 귀찮아
+                element<JsonObject>("application") // TODO("귀찮아")
             }
 
-        @OptIn(ExperimentalSerializationApi::class)
         override fun deserialize(decoder: Decoder): Ready {
             var version: Int? = null
             var user: DiscordUser? = null

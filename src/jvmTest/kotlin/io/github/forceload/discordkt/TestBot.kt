@@ -3,17 +3,19 @@ package io.github.forceload.discordkt
 import io.github.forceload.discordkt.command.argument.*
 import io.github.forceload.discordkt.type.DiscordLocale
 import io.github.forceload.discordkt.type.URLFile
+import io.github.forceload.discordkt.type.gateway.PresenceStatus
 import io.github.forceload.discordkt.type.require
 
 suspend fun main() {
     bot(debug = true) {
         id = System.getenv("DISCORD_KT_TEST_USERID")
         token = System.getenv("DISCORD_KT_TEST_TOKEN")
+        status = PresenceStatus.ONLINE
 
         command("direct_message") {
             arguments(
                 ("message" desc "Message to Send" to String.require prop {
-                    addChoice("Hello", "Hello").local(DiscordLocale.ko_KR to "인삿말")
+                    addChoice("Hello", "안녕하세요!").local(DiscordLocale.ko_KR to "인삿말")
                 }).localDescription(DiscordLocale.ko_KR to "보낼 메시지")
                     .localName(DiscordLocale.ko_KR to "메시지")
             )
@@ -32,6 +34,15 @@ suspend fun main() {
             )
 
             description = ""
+            execute {
+                println((arguments["attachment"] as URLFile).url)
+            }
+        }
+
+        command("shutdown") {
+            execute {
+                this@bot.stop()
+            }
         }
     }.runBlocking()
 }

@@ -1,6 +1,6 @@
 package io.github.forceload.discordkt.command.internal
 
-import io.github.forceload.discordkt.channel.DiscordChannelType
+import io.github.forceload.discordkt.type.channel.DiscordChannelType
 import io.github.forceload.discordkt.command.internal.type.ApplicationCommandOptionType
 import io.github.forceload.discordkt.command.internal.type.ApplicationCommandType
 import io.github.forceload.discordkt.command.internal.type.ValueType

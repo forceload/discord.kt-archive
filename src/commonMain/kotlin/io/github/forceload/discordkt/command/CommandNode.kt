@@ -5,16 +5,22 @@ import io.github.forceload.discordkt.command.argument.ArgumentType
 import io.github.forceload.discordkt.command.internal.DiscordCommand
 import io.github.forceload.discordkt.command.internal.type.ApplicationCommandOptionType
 import io.github.forceload.discordkt.exception.InvalidArgumentTypeException
-import io.github.forceload.discordkt.type.DiscordAttachment
 import io.github.forceload.discordkt.type.DiscordInteger
 import io.github.forceload.discordkt.type.DiscordString
+import io.github.forceload.discordkt.type.URLFile
+import io.github.forceload.discordkt.type.commands.DiscordAttachment
+import io.github.forceload.discordkt.type.gateway.event.dispatch.DiscordInteraction
+import io.github.forceload.discordkt.type.gateway.event.dispatch.interaction.ApplicationCommandData
 import io.github.forceload.discordkt.util.DiscordConstants
+import io.github.forceload.discordkt.util.logger.DebugLogger
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonPrimitive
 
 class CommandNode(var name: String) {
     var description: String = DiscordConstants.defaultDescription
         set(value) { field = value.ifEmpty { DiscordConstants.defaultDescription } }
 
-    private var code = ArrayList<CommandContext.() -> Unit>()
+    private var codes = ArrayList<CommandContext.() -> Unit>()
     private val argumentMap = HashMap<String, Pair<Argument, ArgumentType<*>>>()
 
     fun arguments(vararg args: Pair<Any, Any>) {
@@ -36,12 +42,36 @@ class CommandNode(var name: String) {
     }
 
     fun execute(reaction: CommandContext.() -> Unit) {
-        code.add(reaction)
+        codes.add(reaction)
+    }
+
+    fun run(interaction: DiscordInteraction) {
+        val arguments = HashMap<String, Any>()
+        interaction.data as ApplicationCommandData
+
+        for (option in interaction.data.options) {
+            val primitive = option.value!!.jsonPrimitive
+            arguments[option.name] = when (option.type) {
+                ApplicationCommandOptionType.STRING -> primitive.content
+                ApplicationCommandOptionType.INTEGER -> primitive.int
+                ApplicationCommandOptionType.ATTACHMENT -> {
+                    val attachment = interaction.data.resolved!!.attachments[primitive.content]!!
+                    URLFile(attachment.url, attachment.proxyURL)
+                }
+
+                else -> { }
+            }
+        }
+
+        DebugLogger.log(arguments)
+
+        val context = CommandContext(arguments, interaction.channel, interaction.message)
+        for (code in codes) { code(context) }
     }
 
     fun generateCommand(): DiscordCommand {
         val result = DiscordCommand(null, null, name, description)
-        argumentMap.onEachIndexed { index, entry ->
+        argumentMap.onEachIndexed { _, entry ->
             val argument = entry.value
             val option = DiscordCommand.ApplicationCommandOption(
                 when (argument.second) {

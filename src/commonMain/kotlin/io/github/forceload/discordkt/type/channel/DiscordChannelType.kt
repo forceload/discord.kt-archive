@@ -1,12 +1,14 @@
-package io.github.forceload.discordkt.channel
+package io.github.forceload.discordkt.type.channel
 
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
+@Serializable(with = DiscordChannelType.Serializer::class)
 enum class DiscordChannelType(val id: Int) {
     GUILD_TEXT(0),
     DM(1),
@@ -31,7 +33,7 @@ enum class DiscordChannelType(val id: Int) {
             PrimitiveSerialDescriptor("DiscordChannelType", PrimitiveKind.INT)
 
         override fun deserialize(decoder: Decoder) =
-            DiscordChannelType.fromID(decoder.decodeInt())
+            fromID(decoder.decodeInt())
 
         override fun serialize(encoder: Encoder, value: DiscordChannelType) =
             encoder.encodeInt(value.id)

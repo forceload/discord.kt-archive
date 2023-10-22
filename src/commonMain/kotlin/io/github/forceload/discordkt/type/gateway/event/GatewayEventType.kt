@@ -8,8 +8,7 @@ import kotlinx.serialization.serializer
 
 @Suppress("UNCHECKED_CAST")
 @OptIn(InternalSerializationApi::class)
-abstract class
-GatewayEventType {
+abstract class GatewayEventType {
     companion object {
         val events = HashMap<Int, KSerializer<GatewayEventType>>()
         init {

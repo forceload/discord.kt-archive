@@ -5,7 +5,6 @@ import io.github.forceload.discordkt.util.DiscordConstants
 import io.github.forceload.discordkt.util.SerializerUtil
 import io.github.forceload.discordkt.util.SerializerUtil.makeStructure
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.serializer
@@ -62,7 +61,6 @@ class GatewayEvent(val op: Int, val d: GatewayEventType) {
             return event
         }
 
-        @OptIn(InternalSerializationApi::class)
         override fun serialize(encoder: Encoder, value: GatewayEvent) {
             encoder.beginStructure(descriptor).run {
                 encodeIntElement(descriptor, 0, value.op)
