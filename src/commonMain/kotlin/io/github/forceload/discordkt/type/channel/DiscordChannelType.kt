@@ -8,6 +8,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
+@Suppress("MemberVisibilityCanBePrivate")
 @Serializable(with = DiscordChannelType.Serializer::class)
 enum class DiscordChannelType(val id: Int) {
     GUILD_TEXT(0),
@@ -23,6 +24,9 @@ enum class DiscordChannelType(val id: Int) {
     GUILD_DIRECTORY(14),
     GUILD_FORUM(15),
     GUILD_MEDIA(16);
+
+    fun isDM() = this == DM || this == GROUP_DM
+    fun isNotDM() = !isDM()
 
     companion object {
         fun fromID(id: Int) = entries.first { it.id == id }

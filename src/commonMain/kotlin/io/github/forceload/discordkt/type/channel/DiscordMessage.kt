@@ -26,6 +26,24 @@ import kotlinx.serialization.json.JsonPrimitive
 @Serializable
 class ChannelMention(val id: String, val guildID: String, val type: DiscordChannelType, val name: String)
 
+@Serializable(with = AllowedMentionType.Serializer::class)
+enum class AllowedMentionType(val id: String) {
+    ROLE_MENTIONS("roles"), USER_MENTIONS("users"), EVERYONE_MENTIONS("everyone");
+
+    companion object { fun fromID(id: String) = entries.first { it.id == id } }
+    object Serializer: KSerializer<AllowedMentionType> {
+        override val descriptor: SerialDescriptor = PrimitiveDescriptors["AllowedMentionType"].STRING
+        override fun deserialize(decoder: Decoder) = fromID(decoder.decodeString())
+        override fun serialize(encoder: Encoder, value: AllowedMentionType) = encoder.encodeString(value.id)
+    }
+}
+
+@Serializable
+class AllowedMentions(
+    val parse: Array<AllowedMentionType>,
+    val roles: Array<String>, val users: Array<String>, val repliedUser: Boolean
+)
+
 @Serializable(with = MessageActivityType.Serializer::class)
 enum class MessageActivityType(val id: Int) {
     JOIN(1), SPECTATE(2), LISTEN(3), JOIN_REQUEST(5);
@@ -58,7 +76,7 @@ class MessageReference(
     @SerialName("fall_if_not_exists") val fallIfNotExists: Boolean = true
 )
 
-@Suppress("unused")
+
 enum class MessageFlag(val id: Int) {
     CROSSPOSTED(1 shl 0), IS_CROSSPOST(1 shl 1), SUPPRESS_EMBEDS(1 shl 2),
     SOURCE_MESSAGE_DELETED(1 shl 3), URGENT(1 shl 4), HAS_THREAD(1 shl 5),
@@ -96,7 +114,7 @@ class MessageInteraction(
 @Serializable
 class MessageComponent
 
-@Suppress("unused")
+
 enum class AttachmentFlag(val id: Int) {
     IS_REMIX(1 shl 2);
 
@@ -123,7 +141,7 @@ enum class AttachmentFlag(val id: Int) {
 }
 
 @Serializable
-data class AttachmentObject(
+data class DiscordAttachment(
     val id: String, val filename: String, val description: String = "",
     @SerialName("content_type") val contentType: String, val size: Int,
     val url: String, @SerialName("proxy_url") val proxyURL: String,
@@ -153,7 +171,7 @@ data class ResolvedData(
     val roles: Map<String, DiscordRole> = mapOf(),
     val channels: Map<String, DiscordChannel> = mapOf(),
     // val messages: Map<String, DiscordMessage> = mapOf(), // Disabled for recursive issues
-    val attachments: Map<String, AttachmentObject> = mapOf()
+    val attachments: Map<String, DiscordAttachment> = mapOf()
 )
 
 /**
@@ -169,7 +187,7 @@ class DiscordMessage(
     @SerialName("mention_everyone") val mentionEveryone: Boolean, val mentions: Array<DiscordUser>,
     @SerialName("mention_roles") val mentionRoles: Array<String>, @SerialName("mention_channels") val mentionChannels: Array<ChannelMention> = arrayOf(),
 
-    val attachments: Array<AttachmentObject>, val embeds: Array<DiscordEmbed>,
+    val attachments: Array<DiscordAttachment>, val embeds: Array<DiscordEmbed>,
     val reactions: Array<DiscordReaction> = arrayOf(), val nonce: JsonPrimitive? = null, val pinned: Boolean,
     @SerialName("webhook_id") val webhookID: String? = null, val type: DiscordMessageType, val activity: MessageActivity? = null,
     val application: DiscordApplication? = null, @SerialName("application_id") val applicationID: String? = "",

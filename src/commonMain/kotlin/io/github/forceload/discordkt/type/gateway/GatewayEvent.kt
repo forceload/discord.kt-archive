@@ -19,6 +19,11 @@ import kotlinx.serialization.json.JsonElement
 class GatewayEvent(val op: Int, val d: GatewayEventType) {
     var s: Int? = null
     var t: String? = null
+    internal var auth: String? = null
+        set(value) {
+            field = value
+            d.auth = field
+        }
 
     object Serializer: KSerializer<GatewayEvent> {
         override val descriptor: SerialDescriptor =

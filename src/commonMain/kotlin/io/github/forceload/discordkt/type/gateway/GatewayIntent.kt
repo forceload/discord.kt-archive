@@ -10,7 +10,7 @@ import kotlinx.serialization.encoding.Encoder
 /**
  * https://discord.com/developers/docs/topics/gateway#gateway-intents
  */
-@Suppress("unused")
+
 enum class GatewayIntent(val id: Int) {
     GUILDS(1 shl 0),
     GUILD_MEMBERS(1 shl 1),

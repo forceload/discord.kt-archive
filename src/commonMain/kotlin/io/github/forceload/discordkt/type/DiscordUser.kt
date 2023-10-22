@@ -1,12 +1,17 @@
 package io.github.forceload.discordkt.type
 
+import io.github.forceload.discordkt.network.RequestUtil
 import io.github.forceload.discordkt.type.enums.DiscordUserFlags
 import io.github.forceload.discordkt.type.enums.PremiumType
+import io.github.forceload.discordkt.util.DiscordConstants
 import io.github.forceload.discordkt.util.SerializerExtension.decodeNullableBoolean
 import io.github.forceload.discordkt.util.SerializerExtension.decodeNullableInt
 import io.github.forceload.discordkt.util.SerializerExtension.decodeNullableString
 import io.github.forceload.discordkt.util.SerializerExtension.encodeNullableString
+import io.github.forceload.discordkt.util.SerializerUtil
 import io.github.forceload.discordkt.util.SerializerUtil.makeStructure
+import io.github.forceload.discordkt.util.cache.DMCache
+import io.github.forceload.discordkt.util.logger.DebugLogger
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -39,6 +44,27 @@ class DiscordUser(
 
     var avatarDecoration: String? = null
 
+    /**
+     * DM Channel
+     *
+     * https://discord.com/developers/docs/resources/user#create-dm
+     */
+    private var dmChannel: DiscordChannel? = null
+        get() {
+            if (!DMCache.checkCache(auth!!, id, DiscordConstants.Caches.DM_CACHE_ALIVE)) {
+                DebugLogger.log("Creating DM Channel for user $id")
+
+                val data = "{\"recipient_id\": \"${id}\"}"
+                val channel = RequestUtil.post("users/@me/channels", auth!!, data)
+                field = SerializerUtil.jsonBuild.decodeFromString<DiscordChannel>(channel)
+                DMCache[auth!!, id, DiscordConstants.Caches.DM_CACHE_ALIVE] = field!!
+            } else field = DMCache[auth!!, id]
+
+            return field
+        }
+
+    internal var auth: String? = null
+    fun directMessage(text: String) = dmChannel?.sendMessage(text, auth!!)
     object Serializer: KSerializer<DiscordUser> {
         override val descriptor: SerialDescriptor =
             buildClassSerialDescriptor("DiscordUser") {

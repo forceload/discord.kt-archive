@@ -13,25 +13,30 @@ repositories {
     mavenCentral()
 }
 
-tasks.register<Jar>("botJar") {
-    doFirst {
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-        val main by kotlin.jvm().compilations.getting
-
-        manifest {
-            attributes("Main-Class" to "$packageName.discordkt.TestBotKt")
-        }
-
-        from({
-            main.runtimeDependencyFiles.files.filter { it.name.endsWith("jar") }.map { zipTree(it) }
-        })
-    }
-}
-
 kotlin {
     jvm {
-        compilations.all {
-            kotlinOptions.jvmTarget = "17"
+        compilations {
+            all { kotlinOptions.jvmTarget = "17" }
+            val test = getByName("test")
+
+            tasks.register<Jar>("botJar") {
+                doFirst {
+                    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+                    val main by kotlin.jvm().compilations.getting
+
+                    manifest {
+                        attributes("Main-Class" to "$packageName.discordkt.TestBotKt")
+                    }
+
+                    // main.compileDependencyFiles,
+                    from(
+                        main.output.classesDirs, test.output,
+                        main.runtimeDependencyFiles.files.filter { it.name.endsWith("jar") }.map { zipTree(it) }
+                    )
+                }
+
+                outputs.upToDateWhen { false }
+            }
         }
 
         withJava()

@@ -8,7 +8,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
-@Suppress("unused")
+
 enum class DiscordUserFlags(val id: Int) {
     STAFF(1 shl 0),
     PARTNER(1 shl 1),

@@ -39,7 +39,7 @@ enum class ActivityType(val id: Int) {
     }
 }
 
-@Suppress("unused")
+
 enum class ActivityFlags(val id: Int) {
     INSTANCE(1 shl 0),
     JOIN(1 shl 1),
@@ -339,10 +339,11 @@ class DiscordActivity(
                     7 -> state = decodeNullableString(descriptor, index)
                     8 -> emoji = decodeNullableSerializableElement(descriptor, index, ActivityEmoji.Serializer)
                     9 -> party = decodeSerializableElement(descriptor, index, ActivityParty.Serializer)
-                    10 -> secrets = decodeSerializableElement(descriptor, index, ActivitySecrets.Serializer)
-                    11 -> instance = decodeBooleanElement(descriptor, index)
-                    12 -> flags = decodeSerializableElement(descriptor, index, ActivityFlags.SetSerializer)
-                    13 -> buttons =
+                    10 -> assets = decodeSerializableElement(descriptor, index, ActivityAssets.Serializer)
+                    11 -> secrets = decodeSerializableElement(descriptor, index, ActivitySecrets.Serializer)
+                    12 -> instance = decodeBooleanElement(descriptor, index)
+                    13 -> flags = decodeSerializableElement(descriptor, index, ActivityFlags.SetSerializer)
+                    14 -> buttons =
                         decodeSerializableElement(descriptor, index, ActivityButtons.serializer().arraySerializer())
                 }
             }

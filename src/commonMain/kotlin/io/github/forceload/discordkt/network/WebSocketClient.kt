@@ -10,9 +10,8 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.websocket.*
 import io.ktor.http.*
 import io.ktor.websocket.*
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
-import kotlinx.coroutines.isActive
 import kotlinx.serialization.KSerializer
 
 class WebSocketClient(val host: String, val url: String, val params: HashMap<String, Any>) {
@@ -69,6 +68,9 @@ class WebSocketClient(val host: String, val url: String, val params: HashMap<Str
             paramUrl.append("${entry.key}=${entry.value}")
         }
 
+        @Suppress("LocalVariableName")
+        val IOScope = CoroutineScope(Dispatchers.IO)
+
         client.webSocket(
             method = HttpMethod.Get, host = host, path = "/${url}${paramUrl}"
         ) client@ {
@@ -76,11 +78,13 @@ class WebSocketClient(val host: String, val url: String, val params: HashMap<Str
             while (isRunning) {
                 var i = 0
                 try {
-                    loop@ while (!incoming.isEmpty) {
-                        val message = incoming.receive() as? Frame.Text? ?: break@loop
-                        val msgString = message.readText()
-                        DebugLogger.log("Receive ${i++}: $msgString")
-                        events.add(msgString)
+                    if (!incoming.isEmpty) IOScope.launch {
+                        loop@ while (!incoming.isEmpty) {
+                            val message = incoming.receive() as? Frame.Text? ?: break@loop
+                            val msgString = message.readText()
+                            DebugLogger.log("Receive ${i++}: $msgString")
+                            events.add(msgString)
+                        }
                     }
                 } catch (err: ClosedReceiveChannelException) {
                     val reason = this.closeReason.await()!!
@@ -88,18 +92,17 @@ class WebSocketClient(val host: String, val url: String, val params: HashMap<Str
                     return@client
                 }
 
-                this@WebSocketClient.code(events.toTypedArray())
-                events.clear()
+                this@WebSocketClient.code(events.clean())
 
                 i = 0
                 while (messageQueue.isNotEmpty()) {
                     val msgString = messageQueue.removeFirst()
                     DebugLogger.log("Send ${i++}: $msgString")
-                    send(msgString)
+                    IOScope.launch { send(msgString) }
                 }
 
                 if ((!isRunning || !this.isActive) && reason != null) {
-                    var knownReason = when (reason!!.knownReason) {
+                    val knownReason = when (reason!!.knownReason) {
                         CloseReason.Codes.GOING_AWAY -> {
                             if (!isRunning) CloseReason.Codes.INTERNAL_ERROR
                             else reason!!.knownReason
@@ -119,4 +122,11 @@ class WebSocketClient(val host: String, val url: String, val params: HashMap<Str
             this.close(reason!!)
         }
     }
+}
+
+private inline fun <reified E> ArrayDeque<E>.clean(): Array<E> {
+    val length = this.size
+    val arrayList = ArrayList<E>()
+    for (i in 0..<length) arrayList.add(this.removeFirst())
+    return arrayList.toTypedArray()
 }

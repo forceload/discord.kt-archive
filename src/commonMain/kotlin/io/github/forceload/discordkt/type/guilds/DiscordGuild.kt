@@ -20,6 +20,7 @@ import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
+
 enum class GuildMemberFlags(val id: Int) {
     DID_REJOIN(1 shl 0), COMPLETED_ONBOARDING(1 shl 1),
     BYPASSES_VERIFICATION(1 shl 2), STARTED_ONBOARDING(1 shl 3);
@@ -52,7 +53,7 @@ enum class GuildMemberFlags(val id: Int) {
  * https://discord.com/developers/docs/resources/guild#guild-member-object
  */
 @Serializable(with = GuildMember.Serializer::class)
-class GuildMember(
+data class GuildMember(
     val user: DiscordUser? = null, val nick: String? = null, val avatar: String? = null,
     val roles: Array<String>, val joinedAt: Instant, val premiumSince: Instant? = null,
     val deaf: Boolean, val mute: Boolean, val flags: Set<GuildMemberFlags>, val pending: Boolean? = null,
@@ -133,6 +134,40 @@ class GuildMember(
                 value.communicationDisabledUntil?.let { encodeSerializableElement(descriptor, 11, InstantIso8601Serializer, value.communicationDisabledUntil) }
             }
         }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is GuildMember) return false
+
+        if (user != other.user) return false
+        if (nick != other.nick) return false
+        if (avatar != other.avatar) return false
+        if (!roles.contentEquals(other.roles)) return false
+        if (joinedAt != other.joinedAt) return false
+        if (premiumSince != other.premiumSince) return false
+        if (deaf != other.deaf) return false
+        if (mute != other.mute) return false
+        if (flags != other.flags) return false
+        if (pending != other.pending) return false
+        if (permissions != other.permissions) return false
+        return communicationDisabledUntil == other.communicationDisabledUntil
+    }
+
+    override fun hashCode(): Int {
+        var result = user?.hashCode() ?: 0
+        result = 31 * result + (nick?.hashCode() ?: 0)
+        result = 31 * result + (avatar?.hashCode() ?: 0)
+        result = 31 * result + roles.contentHashCode()
+        result = 31 * result + joinedAt.hashCode()
+        result = 31 * result + (premiumSince?.hashCode() ?: 0)
+        result = 31 * result + deaf.hashCode()
+        result = 31 * result + mute.hashCode()
+        result = 31 * result + flags.hashCode()
+        result = 31 * result + (pending?.hashCode() ?: 0)
+        result = 31 * result + permissions.hashCode()
+        result = 31 * result + (communicationDisabledUntil?.hashCode() ?: 0)
+        return result
     }
 }
 
@@ -218,6 +253,7 @@ enum class MFALevel(val id: Int) {
     }
 }
 
+
 enum class SystemChannelFlags(val id: Int) {
     SUPPRESS_JOIN_NOTIFICATIONS(1 shl 0),
     SUPPRESS_PREMIUM_SUBSCRIPTIONS(1 shl 1),
@@ -275,6 +311,7 @@ enum class GuildNSFWLevel(val id: Int) {
 /**
  * https://discord.com/developers/docs/resources/guild#guild-object-guild-structure
  */
+
 @Serializable
 class DiscordGuild(
     val id: String, val name: String, val icon: String?, @SerialName("icon_hash") val iconHash: String? = null,

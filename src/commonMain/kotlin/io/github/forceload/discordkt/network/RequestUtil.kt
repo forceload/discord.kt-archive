@@ -54,7 +54,6 @@ object RequestUtil {
 
     fun delete(url: String, authorization: String) =
         runBlocking {
-            println(url)
             client.delete {
                 url {
                     protocol = URLProtocol.HTTPS
