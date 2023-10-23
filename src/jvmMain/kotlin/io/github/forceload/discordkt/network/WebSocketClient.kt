@@ -79,17 +79,16 @@ actual class WebSocketClient actual constructor(
             session = this
             while (isRunning) {
                 var i = 0
+
                 try {
-                    if (!incoming.isEmpty) IOScope.launch {
-                        loop@ while (!incoming.isEmpty) {
-                            val message = incoming.receive() as? Frame.Text? ?: break@loop
-                            val msgString = message.readText()
-                            DebugLogger.log("Receive ${i++}: $msgString")
-                            events.add(msgString)
-                        }
+                    loop@ while (!incoming.isEmpty) {
+                        val message = incoming.receive() as? Frame.Text? ?: break@loop
+                        val msgString = message.readText()
+                        DebugLogger.log("Receive ${i++}: $msgString")
+                        events.add(msgString)
                     }
                 } catch (err: ClosedReceiveChannelException) {
-                    val reason = this.closeReason.await()!!
+                    val reason = closeReason.await()!!
                     WarnLogger.log("Close Code: ${reason.code}\nMessage: ${reason.message}")
                     return@client
                 }
