@@ -2,14 +2,12 @@
 Unofficial Discord Kotlin API
 
 ## Example
-Doesn't Work Yet
+It Works!
 ```kotlin
 fun main() {
     bot {
         command("ping") {
-            execute {
-                reply("Pong", mention = false)
-            }
+            execute { reply("Pong") }
         }
     }
 }

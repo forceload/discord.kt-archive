@@ -15,6 +15,7 @@ import io.github.forceload.discordkt.type.gateway.PresenceStatus
 import io.github.forceload.discordkt.type.gateway.event.Heartbeat
 import io.github.forceload.discordkt.type.gateway.event.Hello
 import io.github.forceload.discordkt.type.gateway.event.Identify
+import io.github.forceload.discordkt.type.gateway.event.UpdatePresence
 import io.github.forceload.discordkt.type.gateway.event.dispatch.DiscordInteraction
 import io.github.forceload.discordkt.type.gateway.event.dispatch.InteractionType
 import io.github.forceload.discordkt.type.gateway.event.dispatch.interaction.ApplicationCommandData
@@ -242,7 +243,7 @@ class DiscordBot(debug: Boolean) {
     }
 
     private fun updatePresence() {
-        client.send(GatewayEvent(3, d = DiscordPresence(
+        client.send(GatewayEvent(3, d = UpdatePresence(
             since = since, activities = arrayOf(), status = status, afk = afk
         )))
     }

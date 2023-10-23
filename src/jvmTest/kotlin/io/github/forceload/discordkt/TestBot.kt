@@ -20,7 +20,9 @@ suspend fun main() {
 
         command("direct_message") {
             arguments(
-                "message" desc "Message to Send" to String.require
+                ("message" desc "Message to Send" to String.require)
+                    .localName(DiscordLocale.ko_KR to "메세지")
+                    .localDesc(DiscordLocale.ko_KR to "보낼 메세지")
             )
 
             description = "Send Direct Message to User"
@@ -59,6 +61,15 @@ suspend fun main() {
                         """.trimMargin(), if (this.channel?.type?.isDM() == true)
                             setOf() else setOf(MessageFlag.EPHEMERAL)
                     )
+                }
+            }
+        }
+
+        command("switch_status") {
+            execute {
+                if (ADMIN_IDs.contains(this.user?.username)) {
+                    this.reply("봇의 상태를 전환시킵니다...")
+                    status = if (status == PresenceStatus.ONLINE) PresenceStatus.DO_NOT_DISTURB else PresenceStatus.ONLINE
                 }
             }
         }
