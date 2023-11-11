@@ -4,9 +4,11 @@ import io.github.forceload.discordkt.util.DiscordConstants
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
 
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 expect object ClientContainer {
     val client: HttpClient
     val platform: String
@@ -14,6 +16,8 @@ expect object ClientContainer {
 
 object RequestUtil {
     private val client: HttpClient = ClientContainer.client
+
+    fun getRaw(url: String) = runBlocking { client.get(url).readBytes() }
 
     fun get(url: String, authorization: String, vararg params: Pair<String, Any>) =
         runBlocking {

@@ -3,10 +3,9 @@ package io.github.forceload.discordkt.util.cache
 import io.github.forceload.discordkt.util.CoroutineUtil.delay
 import io.github.forceload.discordkt.util.logger.DebugLogger
 import io.github.forceload.discordkt.util.logger.WarnLogger
-import io.ktor.client.utils.*
-import io.ktor.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 
@@ -14,10 +13,10 @@ class CacheMap<T>(private val cacheName: String) {
     private val cache = HashMap<String, Pair<T, Long>>()
 
     companion object {
-        private const val maxCacheMaps = 128
+        private const val MAX_CACHE_THREADS = 8
 
-        @OptIn(InternalAPI::class)
-        val cacheDispatcher = Dispatchers.clientDispatcher(maxCacheMaps / 8, "CacheDispatcher")
+        @OptIn(ExperimentalCoroutinesApi::class)
+        val cacheDispatcher = Dispatchers.Default.limitedParallelism(MAX_CACHE_THREADS)
         val cacheScope = CoroutineScope(cacheDispatcher)
     }
 

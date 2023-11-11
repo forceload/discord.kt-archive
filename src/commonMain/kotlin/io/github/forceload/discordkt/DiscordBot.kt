@@ -19,7 +19,7 @@ import io.github.forceload.discordkt.type.gateway.event.UpdatePresence
 import io.github.forceload.discordkt.type.gateway.event.dispatch.DiscordInteraction
 import io.github.forceload.discordkt.type.gateway.event.dispatch.InteractionType
 import io.github.forceload.discordkt.type.gateway.event.dispatch.interaction.ApplicationCommandData
-import io.github.forceload.discordkt.util.CoroutineUtil
+import io.github.forceload.discordkt.util.CoroutineScopes
 import io.github.forceload.discordkt.util.CoroutineUtil.delay
 import io.github.forceload.discordkt.util.DiscordConstants
 import io.github.forceload.discordkt.util.SerializerUtil
@@ -138,12 +138,13 @@ class DiscordBot(debug: Boolean) {
         var seqNum = 0
 
         running = true
-        CoroutineUtil.webSocketScope.launch {
+        CoroutineScopes.wsScope.launch {
             if (gatewayBot.sessionStartLimit.remaining <= 0) {
                 WarnLogger.log("The bot will be launched in ${gatewayBot.sessionStartLimit.resetAfter}ms due to the current unavailability of the Gateway protocol.")
                 delay(gatewayBot.sessionStartLimit.resetAfter)
             }
 
+            var restart = false
             client = WebSocketClient.newInstance(gatewayBot.url, version = DiscordConstants.apiVersion)
             client.launch client@{ messages ->
                 val currentTime = Clock.System.now().toEpochMilliseconds()
@@ -182,7 +183,11 @@ class DiscordBot(debug: Boolean) {
                             prepared = true
                         }
 
-                        DiscordConstants.OpCode.RECONNECT -> this.close(1000)
+                        DiscordConstants.OpCode.RECONNECT -> {
+                            this.close(1000)
+                            restart = true
+                        }
+
                         DiscordConstants.OpCode.HEARTBEAT -> {
                             sendHeartbeat(seqNum)
                             latestHeartbeat = currentTime

@@ -3,7 +3,10 @@ package io.github.forceload.discordkt.util
 
 object DiscordConstants {
     const val defaultDescription = "Default Description"
-    const val maxConnections = 16
+
+    const val MAX_COMMAND_THREADS = 4
+    const val MAX_HTTP_THREADS = 4
+    const val MAX_WS_THREADS = 4
 
     const val apiVersion = 10
 
@@ -11,6 +14,7 @@ object DiscordConstants {
         const val DM_CACHE_ALIVE = 10 * TimeConstants.MINUTE_IN_SECONDS * 1000
     }
 
+    @Suppress("unused")
     object OpCode {
         const val DISPATCH = 0
         const val HEARTBEAT = 1

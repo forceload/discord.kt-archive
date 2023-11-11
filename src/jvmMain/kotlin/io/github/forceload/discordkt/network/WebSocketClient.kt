@@ -1,7 +1,10 @@
+@file:Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
+
 package io.github.forceload.discordkt.network
 
 import io.github.forceload.discordkt.type.gateway.GatewayEvent
 import io.github.forceload.discordkt.type.gateway.event.GatewayEventType
+import io.github.forceload.discordkt.util.CoroutineScopes
 import io.github.forceload.discordkt.util.SerializerUtil
 import io.github.forceload.discordkt.util.logger.DebugLogger
 import io.github.forceload.discordkt.util.logger.WarnLogger
@@ -14,6 +17,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.serialization.KSerializer
 
+@Suppress("unused")
 actual class WebSocketClient actual constructor(
     actual val host: String, actual val url: String, actual val params: HashMap<String, Any>
 ) {
@@ -70,9 +74,6 @@ actual class WebSocketClient actual constructor(
             paramUrl.append("${entry.key}=${entry.value}")
         }
 
-        @Suppress("LocalVariableName")
-        val IOScope = CoroutineScope(Dispatchers.IO)
-
         client.webSocket(
             method = HttpMethod.Get, host = host, path = "/${url}${paramUrl}"
         ) client@ {
@@ -99,7 +100,7 @@ actual class WebSocketClient actual constructor(
                 while (messageQueue.isNotEmpty()) {
                     val msgString = messageQueue.removeFirst()
                     DebugLogger.log("Send ${i++}: $msgString")
-                    IOScope.launch { send(msgString) }
+                    CoroutineScopes.wsScope.launch { send(msgString) }
                 }
 
                 if ((!isRunning || !this.isActive) && reason != null) {

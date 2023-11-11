@@ -83,6 +83,10 @@ enum class MessageFlag(val id: Int) {
     EPHEMERAL(1 shl 6), LOADING(1 shl 7), FAILED_TO_MENTION_SOME_ROLES_IN_THREAD(1 shl 8),
     SUPPRESS_NOTIFICATIONS(1 shl 12), IS_VOICE_MESSAGE(1 shl 13);
 
+    infix fun or(other: MessageFlag): Set<MessageFlag> = setOf(this, other)
+    infix fun Set<MessageFlag>.or(other: MessageFlag) = this + other
+    infix fun Set<MessageFlag>.or (other: Set<MessageFlag>) = this + other
+
     object SetSerializer: KSerializer<Set<MessageFlag>> {
         override val descriptor: SerialDescriptor = PrimitiveDescriptors["MessageFlag"].INT
         override fun deserialize(decoder: Decoder): Set<MessageFlag> {

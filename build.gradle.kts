@@ -74,6 +74,7 @@ kotlin {
 
                 implementation(libs.kotlinx.datetime)
                 implementation(libs.kotlinx.serialization.json)
+                implementation(libs.kotlinx.coroutines)
 
                 implementation(kotlin("stdlib-common"))
             }

@@ -3,9 +3,11 @@ package io.github.forceload.discordkt.type
 import io.github.forceload.discordkt.network.RequestUtil
 import io.github.forceload.discordkt.type.channel.DiscordChannelType
 import io.github.forceload.discordkt.type.guilds.GuildMember
+import io.github.forceload.discordkt.util.CoroutineScopes
 import io.github.forceload.discordkt.util.SerializerExtension.arraySerializer
 import io.github.forceload.discordkt.util.SerializerExtension.decodeNullableString
 import io.github.forceload.discordkt.util.SerializerUtil.makeStructure
+import kotlinx.coroutines.async
 import kotlinx.datetime.Instant
 import kotlinx.datetime.serializers.InstantIso8601Serializer
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -298,8 +300,10 @@ data class DiscordChannel(
     val defaultReactionEmoji: DefaultReaction? = null, val defaultThreadRateLimitPerUser: Int? = null,
     val defaultSortOrder: SortOrderType? = null, val defaultForumLayout: ForumLayoutType? = ForumLayoutType.NOT_SET
 ) {
-    fun sendMessage(text: String, token: String) =
-        RequestUtil.post("channels/$id/messages", token, "{\"content\": \"$text\"}")
+    @Suppress("DeferredResultUnused")
+    fun sendMessage(text: String, token: String) {
+        CoroutineScopes.httpScope.async { RequestUtil.post("channels/$id/messages", token, "{\"content\": \"$text\"}") }
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

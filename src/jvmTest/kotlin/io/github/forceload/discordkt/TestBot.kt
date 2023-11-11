@@ -6,9 +6,11 @@ import io.github.forceload.discordkt.command.argument.localName
 import io.github.forceload.discordkt.type.DiscordLocale
 import io.github.forceload.discordkt.type.URLFile
 import io.github.forceload.discordkt.type.channel.DiscordChannelType
-import io.github.forceload.discordkt.type.channel.MessageFlag
+import io.github.forceload.discordkt.type.channel.MessageFlag.*
+import io.github.forceload.discordkt.type.commands.require
 import io.github.forceload.discordkt.type.gateway.PresenceStatus
 import io.github.forceload.discordkt.type.require
+import java.io.File
 
 val ADMIN_IDs = arrayOf("control_delta")
 
@@ -27,21 +29,32 @@ suspend fun main() {
 
             description = "Send Direct Message to User"
             execute {
-                if (this.channel?.type?.isNotDM() == true) this.reply("DM이 전송되었습니다", MessageFlag.EPHEMERAL)
+                if (this.channel?.type?.isNotDM() == true) this.reply("DM이 전송되었습니다", EPHEMERAL)
                 user?.directMessage(arguments["message"] as String)
             }
         }
 
         command("attachment_test") {
             arguments(
-                ("attachment" desc "Attachment to Test" to Attachment)
+                ("attachment" desc "Attachment to Test" to Attachment.require)
                     .localName(DiscordLocale.ko_KR to "첨부파일")
                     .localDesc(DiscordLocale.ko_KR to "테스트할 첨부파일")
             )
 
             description = ""
             execute {
-                println((arguments["attachment"] as URLFile).url)
+                val urlFile = arguments["attachment"] as URLFile
+
+                async {
+                    val content = urlFile.download()
+                    val file = File("downloaded.${urlFile.extension}")
+                    if (!file.exists()) file.createNewFile()
+                    file.writeBytes(content)
+
+                    println("첨부 파일 다운로드 완료")
+                }
+
+                reply("첨부 파일이 전송되었습니다", EPHEMERAL)
             }
         }
 
@@ -59,7 +72,7 @@ suspend fun main() {
                             |- 이 명령어를 실행할 권한이 없음
                             |- 이 명령어를 실행하기에 올바른 채널 유형이 아님
                         """.trimMargin(), if (this.channel?.type?.isDM() == true)
-                            setOf() else setOf(MessageFlag.EPHEMERAL)
+                            setOf() else setOf(EPHEMERAL)
                     )
                 }
             }

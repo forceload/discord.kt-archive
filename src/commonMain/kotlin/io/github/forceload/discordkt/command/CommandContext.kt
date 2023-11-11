@@ -11,7 +11,9 @@ import io.github.forceload.discordkt.type.gateway.event.dispatch.InteractionCall
 import io.github.forceload.discordkt.type.gateway.event.dispatch.InteractionCallbackType.CHANNEL_MESSAGE_WITH_SOURCE
 import io.github.forceload.discordkt.type.gateway.event.dispatch.InteractionResponse
 import io.github.forceload.discordkt.type.gateway.event.dispatch.interaction.callback.InteractionMessageCallback
+import io.github.forceload.discordkt.util.CoroutineScopes
 import io.github.forceload.discordkt.util.SerializerUtil
+import kotlinx.coroutines.*
 import kotlinx.datetime.Clock
 import kotlinx.serialization.encodeToString
 
@@ -38,19 +40,34 @@ class CommandContext(
 
     var autoResponse = true
     var reactionTimestamp = -1L
-    fun response(interactionResponse: InteractionResponse) {
+
+    @Suppress("DeferredResultUnused")
+    fun responseAsync(interactionResponse: InteractionResponse) {
+        reactionTimestamp = Clock.System.now().toEpochMilliseconds()
+        val message = SerializerUtil.jsonBuild.encodeToString<InteractionResponse>(interactionResponse)
+
+        CoroutineScopes.httpScope.async { RequestUtil.post(interactionCallback, token, message) }
+    }
+
+    inline fun responseAsync(type: InteractionCallbackType, data: InteractionCallbackData? = null) =
+        responseAsync(InteractionResponse(type, data))
+
+    fun response(interactionResponse: InteractionResponse) = runBlocking {
         reactionTimestamp = Clock.System.now().toEpochMilliseconds()
         val message = SerializerUtil.jsonBuild.encodeToString<InteractionResponse>(interactionResponse)
 
         RequestUtil.post(interactionCallback, token, message)
     }
 
-    fun response(type: InteractionCallbackType, data: InteractionCallbackData? = null) =
+    inline fun response(type: InteractionCallbackType, data: InteractionCallbackData? = null) =
         response(InteractionResponse(type, data))
 
-    fun reply(text: String, flags: Set<MessageFlag> = setOf()) = response(
+    fun reply(text: String, flags: Set<MessageFlag> = setOf()) = responseAsync(
         CHANNEL_MESSAGE_WITH_SOURCE, InteractionMessageCallback(content = text, flags = flags)
     )
 
     fun reply(text: String, vararg flags: MessageFlag) = reply(text, flags.toSet())
+
+    @Suppress("DeferredResultUnused")
+    fun async(code: () -> Unit) { CoroutineScopes.commandScope.async { code() } }
 }
