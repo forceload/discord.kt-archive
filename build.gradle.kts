@@ -26,7 +26,7 @@ kotlin {
                     val main by kotlin.jvm().compilations.getting
 
                     manifest {
-                        attributes("Main-Class" to "$packageName.discordkt.TestBotKt")
+                        attributes("Main-Class" to "$packageName.discordkt.LauncherKt")
                     }
 
                     from(
@@ -35,6 +35,10 @@ kotlin {
                     )
                 }
 
+                outputs.upToDateWhen { false }
+            }
+
+            tasks.withType<Jar> {
                 outputs.upToDateWhen { false }
             }
         }
@@ -74,6 +78,7 @@ kotlin {
 
                 implementation(libs.kotlinx.datetime)
                 implementation(libs.kotlinx.serialization.json)
+                implementation(libs.kotlinx.coroutines)
 
                 implementation(kotlin("stdlib-common"))
             }

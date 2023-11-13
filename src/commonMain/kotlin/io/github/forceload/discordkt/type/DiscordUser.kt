@@ -10,7 +10,7 @@ import io.github.forceload.discordkt.util.SerializerExtension.decodeNullableStri
 import io.github.forceload.discordkt.util.SerializerExtension.encodeNullableString
 import io.github.forceload.discordkt.util.SerializerUtil
 import io.github.forceload.discordkt.util.SerializerUtil.makeStructure
-import io.github.forceload.discordkt.util.cache.DMCache
+import io.github.forceload.discordkt.type.collection.cache.DMCache
 import io.github.forceload.discordkt.util.logger.DebugLogger
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable

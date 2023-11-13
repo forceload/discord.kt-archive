@@ -1,4 +1,7 @@
+.idea
+
 .gradle
 build
+run
 
 test_report

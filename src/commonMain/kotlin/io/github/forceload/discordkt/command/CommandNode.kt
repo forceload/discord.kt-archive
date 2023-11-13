@@ -13,11 +13,10 @@ import io.github.forceload.discordkt.type.gateway.event.dispatch.DiscordInteract
 import io.github.forceload.discordkt.type.gateway.event.dispatch.InteractionCallbackType
 import io.github.forceload.discordkt.type.gateway.event.dispatch.interaction.ApplicationCommandData
 import io.github.forceload.discordkt.type.gateway.event.dispatch.interaction.callback.InteractionMessageCallback
+import io.github.forceload.discordkt.util.CoroutineScopes
 import io.github.forceload.discordkt.util.DiscordConstants
 import io.github.forceload.discordkt.util.logger.DebugLogger
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import kotlinx.serialization.json.int
 import kotlinx.serialization.json.jsonPrimitive
 
@@ -75,8 +74,11 @@ class CommandNode(var name: String, private val token: String) {
         if (arguments.isNotEmpty()) DebugLogger.log(arguments)
 
         val context = CommandContext(arguments, interaction, token)
-        GlobalScope.launch {
-            for (code in codes) { code(context) }
+        CoroutineScopes.commandScope.launch {
+            val asyncCallList = ArrayList<Deferred<Unit>>()
+            for (code in codes) { asyncCallList.add(async { code(context) }) }
+
+            for (call in asyncCallList) { call.await() }
             if (context.reactionTimestamp == -1L && context.autoResponse) context.response(
                 InteractionCallbackType.CHANNEL_MESSAGE_WITH_SOURCE,
                 InteractionMessageCallback(content = "")

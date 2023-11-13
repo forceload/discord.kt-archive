@@ -17,6 +17,7 @@ abstract class GatewayEventType {
                 1 to Heartbeat::class.serializer(),
                 2 to Identify::class.serializer(),
                 3 to UpdatePresence::class.serializer(),
+                7 to Reconnect::class.serializer(),
                 10 to Hello::class.serializer(),
                 11 to HeartbeatACK::class.serializer()
             ) as Map<Int, KSerializer<GatewayEventType>>)

@@ -1,4 +1,4 @@
-package io.github.forceload.discordkt.util.cache
+package io.github.forceload.discordkt.type.collection.cache
 
 import io.github.forceload.discordkt.type.DiscordChannel
 
