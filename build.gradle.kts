@@ -26,7 +26,7 @@ kotlin {
                     val main by kotlin.jvm().compilations.getting
 
                     manifest {
-                        attributes("Main-Class" to "$packageName.discordkt.TestBotKt")
+                        attributes("Main-Class" to "$packageName.discordkt.LauncherKt")
                     }
 
                     from(
@@ -35,6 +35,10 @@ kotlin {
                     )
                 }
 
+                outputs.upToDateWhen { false }
+            }
+
+            tasks.withType<Jar> {
                 outputs.upToDateWhen { false }
             }
         }

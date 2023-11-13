@@ -59,14 +59,15 @@ class CommandContext(
         RequestUtil.post(interactionCallback, token, message)
     }
 
-    inline fun response(type: InteractionCallbackType, data: InteractionCallbackData? = null) =
+    fun response(type: InteractionCallbackType, data: InteractionCallbackData? = null) =
         response(InteractionResponse(type, data))
 
-    fun reply(text: String, flags: Set<MessageFlag> = setOf()) = responseAsync(
-        CHANNEL_MESSAGE_WITH_SOURCE, InteractionMessageCallback(content = text, flags = flags)
-    )
+    fun reply(text: String, flags: Set<MessageFlag> = setOf(), async: Boolean = true) {
+        if (async) responseAsync(CHANNEL_MESSAGE_WITH_SOURCE, InteractionMessageCallback(content = text, flags = flags))
+        else response(CHANNEL_MESSAGE_WITH_SOURCE, InteractionMessageCallback(content = text, flags = flags))
+    }
 
-    fun reply(text: String, vararg flags: MessageFlag) = reply(text, flags.toSet())
+    fun reply(text: String, vararg flags: MessageFlag) = reply(text, flags.toSet(), false)
 
     @Suppress("DeferredResultUnused")
     fun async(code: () -> Unit) { CoroutineScopes.commandScope.async { code() } }
