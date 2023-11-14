@@ -62,9 +62,10 @@ data class DiscordCommand(
                         element<ValueType>("value")
                     }
 
+                @OptIn(ExperimentalSerializationApi::class)
                 override fun deserialize(decoder: Decoder): ApplicationCommandOptionChoice {
                     var name: String? = null
-                    var nameLocalizations = LocalizationMap()
+                    var nameLocalizations: LocalizationMap? = null
                     var value: ValueType? = null
 
                     decoder.beginStructure(descriptor).run {
@@ -72,7 +73,7 @@ data class DiscordCommand(
                             when (val i = decodeElementIndex(descriptor)) {
                                 CompositeDecoder.DECODE_DONE -> break@loop
                                 0 -> name = decodeStringElement(descriptor, i)
-                                1 -> nameLocalizations = decodeSerializableElement(descriptor, i, DiscordLocale.localizationSerializer) as HashMap
+                                1 -> nameLocalizations = decodeNullableSerializableElement(descriptor, i, DiscordLocale.localizationSerializer) as HashMap
                                 2 -> value = decodeSerializableElement(descriptor, i, ValueType.Serializer)
                                 else -> throw SerializationException("Unknown Index $i")
                             }
@@ -82,7 +83,7 @@ data class DiscordCommand(
                     }
 
                     val result = ApplicationCommandOptionChoice(name!!, value!!)
-                    result.nameLocalizations.putAll(nameLocalizations)
+                    nameLocalizations?.let { result.nameLocalizations.putAll(nameLocalizations!!) }
                     return result
                 }
 

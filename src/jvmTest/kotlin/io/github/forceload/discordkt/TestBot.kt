@@ -13,7 +13,6 @@ import io.github.forceload.discordkt.type.require
 import io.github.forceload.discordkt.util.CoroutineUtil.delay
 import kotlinx.coroutines.runBlocking
 import java.io.File
-import kotlin.test.Test
 
 val ADMIN_IDs = arrayOf("control_delta")
 
@@ -91,13 +90,13 @@ class TestBot {
             }
         }
 
-    @Test
+    // @Test
     fun runBot() {
         val bot = defaultTestBot
         bot.runBlocking()
     }
 
-    @Test
+    // @Test
     fun botPair() = runBlocking {
         val firstBot = defaultTestBot
         val secondBot = bot(debug = true) {
