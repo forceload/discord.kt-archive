@@ -73,7 +73,7 @@ data class DiscordCommand(
                             when (val i = decodeElementIndex(descriptor)) {
                                 CompositeDecoder.DECODE_DONE -> break@loop
                                 0 -> name = decodeStringElement(descriptor, i)
-                                1 -> nameLocalizations = decodeNullableSerializableElement(descriptor, i, DiscordLocale.localizationSerializer) as HashMap
+                                1 -> nameLocalizations = decodeNullableSerializableElement(descriptor, i, DiscordLocale.localizationSerializer) as HashMap?
                                 2 -> value = decodeSerializableElement(descriptor, i, ValueType.Serializer)
                                 else -> throw SerializationException("Unknown Index $i")
                             }
