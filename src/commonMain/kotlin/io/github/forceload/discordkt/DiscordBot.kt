@@ -23,6 +23,8 @@ import io.github.forceload.discordkt.util.DiscordConstants
 import io.github.forceload.discordkt.util.SerializerUtil
 import io.github.forceload.discordkt.util.logger.DebugLogger
 import io.github.forceload.discordkt.util.logger.WarnLogger
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 
@@ -85,6 +87,8 @@ class DiscordBot(debug: Boolean) {
     }
 
     var running: Boolean = false
+    private var authenticated = false
+    private var clientInitialized = false
     private lateinit var client: WebSocketClient
     fun run(commandOptionMaxDepth: Int = 16, heartbeatTimeScale: Double = 0.95) {
         val commands = RequestUtil.get("applications/${id}/commands", token, "with_localizations" to true)
@@ -146,6 +150,8 @@ class DiscordBot(debug: Boolean) {
 
                 var restart = false
                 client = WebSocketClient.newInstance(webSocketURL, version = DiscordConstants.apiVersion)
+                clientInitialized = true
+
                 client.launch client@{ messages ->
                     val currentTime = Clock.System.now().toEpochMilliseconds()
 
@@ -161,6 +167,7 @@ class DiscordBot(debug: Boolean) {
                             }
                         } catch (err: Throwable) { // INTERNAL_ERROR
                             this.close("${err::class.qualifiedName}: ${err.message ?: "Unknown error"}", 1001)
+                            clientInitialized = false
 
                             WarnLogger.log(err.stackTraceToString())
                             WarnLogger.log("The bot will be shut down in a few seconds...")
@@ -189,6 +196,7 @@ class DiscordBot(debug: Boolean) {
 
                             DiscordConstants.OpCode.RECONNECT -> {
                                 this.close(1000)
+                                clientInitialized = false
                                 restart = true
                             }
 
@@ -202,6 +210,7 @@ class DiscordBot(debug: Boolean) {
                                     val readyEvent = event.d as Ready
                                     webSocketURL = readyEvent.resumeGatewayURL
                                     sessionID = readyEvent.sessionID
+                                    authenticated = true
                                 }
 
                                 "INTERACTION_CREATE" -> {
@@ -229,6 +238,7 @@ class DiscordBot(debug: Boolean) {
                     if (closeCode != null) {
                         if (closeCode!!.first != null) this.close(closeCode!!.first!!, closeCode!!.second)
                         else this.close(closeCode!!.second)
+                        clientInitialized = false
 
                         DebugLogger.log("Bot Stop Code: $closeCode")
                         restart = false
@@ -237,6 +247,9 @@ class DiscordBot(debug: Boolean) {
 
                 if (!restart) {
                     availableInstances.remove(this@DiscordBot)
+                    clientInitialized = false
+                    authenticated = false
+                    prepared = false
                     running = false
                 }
             }
@@ -262,9 +275,13 @@ class DiscordBot(debug: Boolean) {
         client.send(GatewayEvent(1, d = Heartbeat(seqNum)), GatewayEvent.Serializer)
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun updatePresence() {
-        client.send(GatewayEvent(3, d = UpdatePresence(
-            since = since, activities = arrayOf(), status = status, afk = afk
-        )))
+        if (running) GlobalScope.launch {
+            while (!clientInitialized || !authenticated) delay(50)
+            client.send(GatewayEvent(3, d = UpdatePresence(
+                since = since, activities = arrayOf(), status = status, afk = afk
+            )))
+        }
     }
 }

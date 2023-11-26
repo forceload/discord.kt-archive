@@ -34,8 +34,18 @@ kotlin {
                         main.runtimeDependencyFiles.files.filter { it.name.endsWith("jar") }.map { zipTree(it) }
                     )
                 }
+            }
 
-                outputs.upToDateWhen { false }
+            tasks.register<Jar>("libJar") {
+                doFirst {
+                    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+                    val main by kotlin.jvm().compilations.getting
+
+                    from(
+                        main.output.classesDirs,
+                        main.runtimeDependencyFiles.files.filter { it.name.endsWith("jar") }.map { zipTree(it) }
+                    )
+                }
             }
 
             tasks.withType<Jar> {
